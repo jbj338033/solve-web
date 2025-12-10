@@ -13,7 +13,7 @@ import {
 } from '@/entities/user'
 import { ActivityGraph } from '@/features/activity-graph'
 import { DonutChart, RadarChart } from '@/shared/ui'
-import { cn } from '@/shared/lib'
+import { cn, parseDate } from '@/shared/lib'
 
 interface Props {
   params: Promise<{ username: string }>
@@ -40,7 +40,7 @@ export default function ProfilePage({ params }: Props) {
 
   const availablePeriods = useMemo(() => {
     if (!profile) return [{ value: 'recent', label: '최근' }]
-    const createdYear = new Date(profile.createdAt).getFullYear()
+    const createdYear = parseDate(profile.createdAt).year()
     const currentYear = new Date().getFullYear()
     const periods = [{ value: 'recent', label: '최근' }]
     for (let y = currentYear; y >= createdYear; y--) {
