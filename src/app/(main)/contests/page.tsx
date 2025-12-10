@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Loader2 } from 'lucide-react'
 import { contestApi, getContestStatus, type Contest, type ContestStatus } from '@/entities/contest'
-import { cn } from '@/shared/lib'
+import { cn, formatDateTime, formatRelativeTime } from '@/shared/lib'
 
 export default function ContestsPage() {
   const router = useRouter()
@@ -196,20 +196,8 @@ function StatusBadge({ status }: { status: ContestStatus }) {
 }
 
 function formatContestTime(contest: Contest, status: ContestStatus): string {
-  const start = new Date(contest.startAt)
-  const end = new Date(contest.endAt)
-  const now = new Date()
-
   if (status === 'ONGOING') {
-    const remaining = end.getTime() - now.getTime()
-    const hours = Math.floor(remaining / (1000 * 60 * 60))
-    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60))
-    return `${hours}시간 ${minutes}분 남음`
+    return formatRelativeTime(contest.endAt)
   }
-
-  const month = start.getMonth() + 1
-  const day = start.getDate()
-  const hours = String(start.getHours()).padStart(2, '0')
-  const minutes = String(start.getMinutes()).padStart(2, '0')
-  return `${month}월 ${day}일 ${hours}:${minutes}`
+  return formatDateTime(contest.startAt)
 }
