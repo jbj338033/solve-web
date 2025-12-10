@@ -4,9 +4,9 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import Editor from '@monaco-editor/react'
-import { ArrowLeft, Play, Send, Loader2, Square, X } from 'lucide-react'
+import { ArrowLeft, Play, Send, Loader2, Square, X, CheckCircle, XCircle } from 'lucide-react'
 import type { ProblemDetail } from '@/entities/problem'
-import { submissionApi, LANGUAGE_MAP, RESULT_LABELS } from '@/entities/submission'
+import { submissionApi, LANGUAGE_MAP, RESULT_LABELS, type JudgeResult } from '@/entities/submission'
 import { useAuthStore } from '@/features/auth'
 import { ProblemViewer } from '@/widgets/problem-viewer'
 import { useResizer } from '@/shared/hooks'
@@ -28,6 +28,13 @@ interface ExecutionResult {
   exitCode: number | null
   time: number | null
   memory: number | null
+}
+
+interface SubmitState {
+  status: 'idle' | 'submitting' | 'judging' | 'success' | 'failed'
+  score: number | null
+  result: JudgeResult | null
+  message: string | null
 }
 
 interface Props {
@@ -52,21 +59,32 @@ export function SolveWorkspace({ problem, contestId }: Props) {
   const outputRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const completedRef = useRef(false)
+  const hideTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitProgress, setSubmitProgress] = useState<number | null>(null)
+  const [submit, setSubmit] = useState<SubmitState>({
+    status: 'idle',
+    score: null,
+    result: null,
+    message: null,
+  })
 
-  // Auto scroll to bottom when lines change
+  const hideStatusBarLater = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+    hideTimerRef.current = setTimeout(() => {
+      setSubmit({ status: 'idle', score: null, result: null, message: null })
+    }, 3000)
+  }, [])
+
   useEffect(() => {
     if (outputRef.current) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight
     }
   }, [lines])
 
-  // Cleanup WebSocket on unmount
   useEffect(() => {
     return () => {
       wsRef.current?.close()
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
     }
   }, [])
 
@@ -165,65 +183,78 @@ export function SolveWorkspace({ problem, contestId }: Props) {
       return
     }
 
-    setIsSubmitting(true)
-    setSubmitProgress(0)
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current)
+      hideTimerRef.current = null
+    }
+
+    setSubmit({ status: 'submitting', score: null, result: null, message: null })
 
     try {
       const result = contestId
         ? await submissionApi.createContestSubmission(contestId, problem.id, { language: LANGUAGE_MAP[language], code })
         : await submissionApi.createSubmission(problem.id, { language: LANGUAGE_MAP[language], code })
 
+      setSubmit({ status: 'judging', score: 0, result: null, message: null })
+
       const unsubscribe = submissionApi.subscribeSubmissions(
         (type, data) => {
           if (data.id !== result.id) return
 
+          if (data.status === 'JUDGING' && data.score !== null) {
+            setSubmit((prev) => ({ ...prev, score: data.score }))
+          }
+
           if (data.status === 'COMPLETED') {
             unsubscribe()
-            if (data.result === 'ACCEPTED') {
-              setSubmitProgress(100)
-              setTimeout(() => {
-                setIsSubmitting(false)
-                setSubmitProgress(null)
-                toast.success(RESULT_LABELS.ACCEPTED)
-              }, 300)
-            } else {
-              setIsSubmitting(false)
-              setSubmitProgress(null)
-              if (data.result) {
-                toast.error(RESULT_LABELS[data.result])
-              }
-            }
-          } else if (data.status === 'JUDGING') {
-            setSubmitProgress(50)
+            const isSuccess = data.result === 'ACCEPTED'
+            setSubmit({
+              status: isSuccess ? 'success' : 'failed',
+              score: data.score,
+              result: data.result,
+              message: data.result ? RESULT_LABELS[data.result] : null,
+            })
+            hideStatusBarLater()
           }
         },
         () => {
-          setIsSubmitting(false)
-          setSubmitProgress(null)
-          toast.error('채점 연결 실패')
+          setSubmit({ status: 'failed', score: null, result: null, message: '연결 실패' })
+          hideStatusBarLater()
         }
       )
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '제출 실패')
-      setIsSubmitting(false)
-      setSubmitProgress(null)
+      setSubmit({
+        status: 'failed',
+        score: null,
+        result: null,
+        message: err instanceof Error ? err.message : '제출 실패',
+      })
+      hideStatusBarLater()
     }
   }
 
+  const isSubmitInProgress = submit.status === 'submitting' || submit.status === 'judging'
+  const showStatusBar = submit.status !== 'idle'
+
   return (
     <div className="flex h-screen flex-col bg-background">
-      {/* Header */}
       <header className="relative flex h-11 shrink-0 items-center justify-between border-b border-border px-4">
         <div className="flex items-center gap-3">
-          <Link href="/problems" className="text-muted-foreground hover:text-foreground">
+          <Link
+            href={contestId ? `/contests/${contestId}` : '/problems'}
+            className="text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="size-4" />
           </Link>
           <span className="text-sm font-medium">{problem.title}</span>
+          {contestId && (
+            <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">대회</span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleRun}
-            disabled={isRunning || isSubmitting}
+            disabled={isRunning || isSubmitInProgress}
             className="flex h-7 items-center gap-1.5 rounded-md border border-border bg-background px-3 text-xs font-medium transition-colors hover:bg-muted disabled:opacity-50"
           >
             {isRunning ? <Loader2 className="size-3.5 animate-spin" /> : <Play className="size-3.5" />}
@@ -231,31 +262,27 @@ export function SolveWorkspace({ problem, contestId }: Props) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={isSubmitting || isRunning}
+            disabled={isSubmitInProgress || isRunning}
             className="flex h-7 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
-            {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
+            {isSubmitInProgress ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
             제출
           </button>
         </div>
       </header>
 
-      {/* Main */}
       <div ref={horizontal.containerRef} className="flex flex-1 overflow-hidden">
-        {/* Problem */}
         <div className="h-full overflow-auto" style={{ width: `${horizontal.size}%` }}>
           <ProblemViewer problem={problem} />
         </div>
 
         <Resizer direction="horizontal" onMouseDown={horizontal.startDragging} />
 
-        {/* Editor + Terminal */}
         <div
           ref={vertical.containerRef}
           className="flex h-full flex-col"
           style={{ width: `${100 - horizontal.size}%` }}
         >
-          {/* Editor header */}
           <div className="flex h-10 shrink-0 items-center border-b border-border px-3">
             <select
               value={language}
@@ -268,8 +295,63 @@ export function SolveWorkspace({ problem, contestId }: Props) {
             </select>
           </div>
 
-          {/* Editor */}
-          <div className="relative" style={{ height: showTerminal ? `${vertical.size}%` : '100%' }}>
+          <div
+            className={cn(
+              'grid transition-all duration-300 ease-out',
+              showStatusBar ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+            )}
+          >
+            <div className="overflow-hidden">
+              <div
+                className={cn(
+                  'flex items-center justify-between px-4 py-2.5',
+                  submit.status === 'submitting' && 'bg-primary/5',
+                  submit.status === 'judging' && 'bg-primary/5',
+                  submit.status === 'success' && 'bg-green-500/10',
+                  submit.status === 'failed' && 'bg-red-500/10'
+                )}
+              >
+                <div className="flex items-center gap-2.5">
+                  {(submit.status === 'submitting' || submit.status === 'judging') && (
+                    <Loader2 className="size-4 animate-spin text-primary" />
+                  )}
+                  {submit.status === 'success' && (
+                    <CheckCircle className="size-4 text-green-500" />
+                  )}
+                  {submit.status === 'failed' && (
+                    <XCircle className="size-4 text-red-500" />
+                  )}
+                  <span
+                    className={cn(
+                      'text-sm font-medium',
+                      (submit.status === 'submitting' || submit.status === 'judging') && 'text-primary',
+                      submit.status === 'success' && 'text-green-600',
+                      submit.status === 'failed' && 'text-red-600'
+                    )}
+                  >
+                    {submit.status === 'submitting' && '제출 중...'}
+                    {submit.status === 'judging' && '채점 중...'}
+                    {submit.status === 'success' && submit.message}
+                    {submit.status === 'failed' && submit.message}
+                  </span>
+                </div>
+                {submit.score !== null && (
+                  <span
+                    className={cn(
+                      'text-sm font-semibold tabular-nums',
+                      submit.status === 'success' && 'text-green-600',
+                      submit.status === 'failed' && 'text-red-600',
+                      submit.status === 'judging' && 'text-primary'
+                    )}
+                  >
+                    {submit.score}%
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="relative flex-1" style={{ height: showTerminal ? `${vertical.size}%` : undefined }}>
             <Editor
               height="100%"
               language={language}
@@ -287,31 +369,15 @@ export function SolveWorkspace({ problem, contestId }: Props) {
                 renderLineHighlight: 'none',
               }}
             />
-            {isSubmitting && submitProgress !== null && (
-              <div className="absolute inset-x-4 bottom-4 flex h-6 items-center gap-3">
-                <div className="relative h-full flex-1 overflow-hidden rounded-full bg-zinc-200">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all"
-                    style={{ width: `${submitProgress}%` }}
-                  />
-                </div>
-                <span className="w-10 text-right text-xs font-medium text-muted-foreground">
-                  {Math.round(submitProgress)}%
-                </span>
-              </div>
-            )}
           </div>
 
-          {/* Terminal */}
           {showTerminal && (
             <>
               <Resizer direction="vertical" onMouseDown={vertical.startDragging} />
-
               <div
                 className="flex flex-col bg-zinc-900"
                 style={{ height: `${100 - vertical.size}%` }}
               >
-                {/* Terminal Header */}
                 <div className="flex h-8 shrink-0 items-center justify-between border-b border-zinc-700 px-3">
                   <span className="text-xs text-zinc-400">
                     터미널 {isRunning && <span className="text-green-400">● running</span>}
@@ -339,8 +405,6 @@ export function SolveWorkspace({ problem, contestId }: Props) {
                     </button>
                   </div>
                 </div>
-
-                {/* Terminal Body */}
                 <div
                   ref={outputRef}
                   onClick={() => inputRef.current?.focus()}
@@ -348,6 +412,7 @@ export function SolveWorkspace({ problem, contestId }: Props) {
                 >
                   {lines.map((line, i) => (
                     <div key={i} className={cn(
+                      'whitespace-pre-wrap',
                       line.type === 'cmd' && 'text-zinc-400',
                       line.type === 'stderr' && 'text-red-400',
                       line.type === 'stdin' && 'text-cyan-400',
