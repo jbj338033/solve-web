@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Loader2 } from 'lucide-react'
 import { problemApi, type Problem } from '@/entities/problem'
-import { cn } from '@/shared/lib'
+import { DifficultyBadge } from '@/shared/ui'
 
 export default function ProblemsPage() {
   const router = useRouter()
@@ -149,24 +149,3 @@ export default function ProblemsPage() {
   )
 }
 
-function DifficultyBadge({ difficulty }: { difficulty: number }) {
-  const tier = Math.ceil(difficulty / 5)
-  const tierNames = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Ruby']
-  const tierStyles = [
-    'bg-amber-500/10 text-amber-700',
-    'bg-slate-400/10 text-slate-500',
-    'bg-yellow-500/10 text-yellow-600',
-    'bg-teal-500/10 text-teal-600',
-    'bg-sky-500/10 text-sky-600',
-    'bg-rose-500/10 text-rose-500',
-  ]
-
-  const tierIndex = Math.min(tier - 1, tierNames.length - 1)
-  const level = difficulty - (tier - 1) * 5
-
-  return (
-    <span className={cn('shrink-0 rounded px-2 py-0.5 text-xs font-medium', tierStyles[tierIndex])}>
-      {tierNames[tierIndex]} {level}
-    </span>
-  )
-}
