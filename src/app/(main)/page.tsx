@@ -5,7 +5,8 @@ import { problemApi } from '@/entities/problem'
 import { contestApi, getContestStatus, type Contest } from '@/entities/contest'
 import { userApi, type Tier } from '@/entities/user'
 import { Banner } from '@/widgets/banner'
-import { cn } from '@/shared/lib'
+import { DifficultyBadge } from '@/shared/ui'
+import { cn, parseDate, formatDateTime, formatRelativeTime } from '@/shared/lib'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,7 +45,7 @@ async function ContestSection() {
       const status = getContestStatus(c.startAt, c.endAt)
       return status === 'ONGOING' || status === 'UPCOMING'
     })
-    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+    .sort((a, b) => parseDate(a.startAt).valueOf() - parseDate(b.startAt).valueOf())
     .slice(0, 3)
 
   return (
@@ -93,22 +94,10 @@ function ContestCard({ contest }: { contest: Contest }) {
 }
 
 function formatContestTime(contest: Contest, status: string): string {
-  const start = new Date(contest.startAt)
-  const end = new Date(contest.endAt)
-  const now = new Date()
-
   if (status === 'ONGOING') {
-    const remaining = end.getTime() - now.getTime()
-    const hours = Math.floor(remaining / (1000 * 60 * 60))
-    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60))
-    return `${hours}시간 ${minutes}분 남음`
+    return formatRelativeTime(contest.endAt)
   }
-
-  const month = start.getMonth() + 1
-  const day = start.getDate()
-  const hours = String(start.getHours()).padStart(2, '0')
-  const minutes = String(start.getMinutes()).padStart(2, '0')
-  return `${month}월 ${day}일 ${hours}:${minutes}`
+  return formatDateTime(contest.startAt)
 }
 
 async function RecentProblemsSection() {
@@ -207,28 +196,6 @@ function SectionHeader({ title, href }: { title: string; href: string }) {
         <ArrowRight className="size-3.5" />
       </Link>
     </div>
-  )
-}
-
-function DifficultyBadge({ difficulty }: { difficulty: number }) {
-  const tier = Math.ceil(difficulty / 5)
-  const tierNames = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Ruby']
-  const tierStyles = [
-    'bg-amber-500/10 text-amber-700',
-    'bg-slate-400/10 text-slate-500',
-    'bg-yellow-500/10 text-yellow-600',
-    'bg-teal-500/10 text-teal-600',
-    'bg-sky-500/10 text-sky-600',
-    'bg-rose-500/10 text-rose-500',
-  ]
-
-  const tierIndex = Math.min(tier - 1, tierNames.length - 1)
-  const level = difficulty - (tier - 1) * 5
-
-  return (
-    <span className={cn('shrink-0 rounded px-2 py-0.5 text-xs font-medium', tierStyles[tierIndex])}>
-      {tierNames[tierIndex]} {level}
-    </span>
   )
 }
 
