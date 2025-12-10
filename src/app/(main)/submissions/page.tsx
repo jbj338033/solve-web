@@ -10,7 +10,7 @@ import {
   RESULT_STYLES,
   type Submission,
 } from '@/entities/submission'
-import { cn } from '@/shared/lib'
+import { cn, formatDateTime } from '@/shared/lib'
 
 export default function SubmissionsPage() {
   const router = useRouter()
@@ -147,7 +147,7 @@ export default function SubmissionsPage() {
                         {LANGUAGE_LABELS[submission.language]}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3.5 text-sm text-muted-foreground">
-                        {formatDate(submission.createdAt)}
+                        {formatDateTime(submission.createdAt)}
                       </td>
                     </tr>
                   ))}
@@ -189,12 +189,4 @@ function ResultBadge({ submission }: { submission: Submission }) {
   return <span className="text-sm text-muted-foreground">-</span>
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${month}/${day} ${hours}:${minutes}`
-}
 
