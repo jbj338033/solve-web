@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Loader2 } from 'lucide-react'
 import { workbookApi, type Workbook } from '@/entities/workbook'
+import { formatDate } from '@/shared/lib'
 
 export default function WorkbooksPage() {
   const router = useRouter()
@@ -151,10 +152,3 @@ export default function WorkbooksPage() {
   )
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  return `${year}.${month}.${day}`
-}
