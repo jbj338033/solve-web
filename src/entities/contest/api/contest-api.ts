@@ -4,14 +4,28 @@ import type { Contest, ContestDetail, ContestProblem, ScoringType, ScoreboardTyp
 export interface ScoreboardResponse {
   contestId: string
   participants: ParticipantScore[]
+  frozenAt?: string
 }
 
 export interface ParticipantScore {
-  userId: string
+  rank: number
+  user: {
+    id: string
+    username: string
+    displayName: string
+    profileImage: string | null
+  }
   totalScore: number
   penalty: number
-  rank: number
-  joinedAt: string
+  problemScores: ProblemScore[]
+}
+
+export interface ProblemScore {
+  problemId: string
+  score: number | null
+  attempts: number
+  solvedAt: string | null
+  frozen?: boolean
 }
 
 export const contestApi = {

@@ -1,3 +1,5 @@
+import { parseDate } from '@/shared/lib'
+
 export interface Contest {
   id: string
   title: string
@@ -17,6 +19,7 @@ export interface ContestDetail extends Contest {
   freezeMinutes?: number
   problems: ContestProblem[]
   updatedAt: string
+  isParticipating: boolean
 }
 
 export interface ContestProblem {
@@ -34,9 +37,9 @@ export type ScoreboardType = 'REALTIME' | 'FREEZE' | 'AFTER_CONTEST'
 export type ContestStatus = 'UPCOMING' | 'ONGOING' | 'ENDED'
 
 export function getContestStatus(startAt: string, endAt: string): ContestStatus {
-  const now = new Date()
-  const start = new Date(startAt)
-  const end = new Date(endAt)
+  const now = Date.now()
+  const start = parseDate(startAt).valueOf()
+  const end = parseDate(endAt).valueOf()
 
   if (now < start) return 'UPCOMING'
   if (now > end) return 'ENDED'

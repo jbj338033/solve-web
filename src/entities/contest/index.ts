@@ -2,6 +2,7 @@ export { contestApi } from './api/contest-api'
 export type {
   ScoreboardResponse,
   ParticipantScore,
+  ProblemScore,
   CreateContestRequest,
   UpdateContestRequest,
 } from './api/contest-api'
