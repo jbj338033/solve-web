@@ -13,6 +13,9 @@ const SORT_OPTIONS: { value: ProblemSort; label: string }[] = [
   { value: 'LATEST', label: '최신순' },
   { value: 'DIFFICULTY_ASC', label: '난이도 낮은순' },
   { value: 'DIFFICULTY_DESC', label: '난이도 높은순' },
+  { value: 'ACCEPT_RATE_DESC', label: '정답률 높은순' },
+  { value: 'SUBMISSIONS_DESC', label: '제출 많은순' },
+  { value: 'ACCEPTED_USERS_DESC', label: '푼 사람 많은순' },
 ]
 
 export function ProblemsContent() {
