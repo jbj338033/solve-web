@@ -1,22 +1,10 @@
-import { api } from './client'
+import { api } from '@/shared/api'
 
 export type FileType = 'PROFILE' | 'BANNER' | 'PROBLEM_IMAGE'
 
-export interface CreatePresignedUrlRequest {
-  type: FileType
-  contentType: string
-  size: number
-}
-
-export interface PresignedUrlResponse {
-  uploadUrl: string
-  fileUrl: string
-  expiresIn: number
-}
-
 export const fileApi = {
-  getPresignedUrl: (data: CreatePresignedUrlRequest) =>
-    api.post<PresignedUrlResponse>('/files/presigned', data),
+  getPresignedUrl: (data: { type: FileType; contentType: string; size: number }) =>
+    api.post<{ uploadUrl: string; fileUrl: string; expiresIn: number }>('/files/presigned', data),
 
   upload: async (file: File, type: FileType): Promise<string> => {
     const { uploadUrl, fileUrl } = await fileApi.getPresignedUrl({

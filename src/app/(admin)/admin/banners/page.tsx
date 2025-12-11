@@ -5,7 +5,7 @@ import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { Plus, Loader2, Trash2, Pencil, X, Check, Upload, ImageIcon } from 'lucide-react'
 import { adminBannerApi, type AdminBanner } from '@/features/admin'
-import { fileApi } from '@/shared/api'
+import { fileApi } from '@/entities/file'
 
 export default function AdminBannersPage() {
   const [banners, setBanners] = useState<AdminBanner[]>([])
