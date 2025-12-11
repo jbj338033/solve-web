@@ -1,18 +1,53 @@
 'use client'
 
-import { Plus, Trash2, Clock, HardDrive, Hash, Eye, EyeOff } from 'lucide-react'
+import { Plus, Trash2, Clock, HardDrive, Eye, EyeOff } from 'lucide-react'
 import { FormSection, MarkdownEditor } from '@/shared/ui'
 import { cn } from '@/shared/lib'
+import type { ProblemDifficulty, ProblemType } from '@/entities/problem'
+
+const DIFFICULTIES: { value: ProblemDifficulty; label: string }[] = [
+  { value: 'UNRATED', label: 'Unrated' },
+  { value: 'MOON_5', label: 'Moon 5' },
+  { value: 'MOON_4', label: 'Moon 4' },
+  { value: 'MOON_3', label: 'Moon 3' },
+  { value: 'MOON_2', label: 'Moon 2' },
+  { value: 'MOON_1', label: 'Moon 1' },
+  { value: 'STAR_5', label: 'Star 5' },
+  { value: 'STAR_4', label: 'Star 4' },
+  { value: 'STAR_3', label: 'Star 3' },
+  { value: 'STAR_2', label: 'Star 2' },
+  { value: 'STAR_1', label: 'Star 1' },
+  { value: 'COMET_5', label: 'Comet 5' },
+  { value: 'COMET_4', label: 'Comet 4' },
+  { value: 'COMET_3', label: 'Comet 3' },
+  { value: 'COMET_2', label: 'Comet 2' },
+  { value: 'COMET_1', label: 'Comet 1' },
+  { value: 'PLANET_5', label: 'Planet 5' },
+  { value: 'PLANET_4', label: 'Planet 4' },
+  { value: 'PLANET_3', label: 'Planet 3' },
+  { value: 'PLANET_2', label: 'Planet 2' },
+  { value: 'PLANET_1', label: 'Planet 1' },
+  { value: 'NEBULA_5', label: 'Nebula 5' },
+  { value: 'NEBULA_4', label: 'Nebula 4' },
+  { value: 'NEBULA_3', label: 'Nebula 3' },
+  { value: 'NEBULA_2', label: 'Nebula 2' },
+  { value: 'NEBULA_1', label: 'Nebula 1' },
+  { value: 'GALAXY_5', label: 'Galaxy 5' },
+  { value: 'GALAXY_4', label: 'Galaxy 4' },
+  { value: 'GALAXY_3', label: 'Galaxy 3' },
+  { value: 'GALAXY_2', label: 'Galaxy 2' },
+  { value: 'GALAXY_1', label: 'Galaxy 1' },
+]
 
 export interface ProblemFormData {
   title: string
   description: string
   inputFormat: string
   outputFormat: string
-  difficulty: number
+  difficulty: ProblemDifficulty
   timeLimit: number
   memoryLimit: number
-  type: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
+  type: ProblemType
   examples: { input: string; output: string }[]
   testcases: { input: string; output: string }[]
   tagIds: string[]
@@ -40,17 +75,11 @@ export function ProblemForm({ form, onChange, tags }: Props) {
   }
 
   const removeExample = (index: number) => {
-    updateField(
-      'examples',
-      form.examples.filter((_, i) => i !== index)
-    )
+    updateField('examples', form.examples.filter((_, i) => i !== index))
   }
 
   const updateExample = (index: number, field: 'input' | 'output', value: string) => {
-    updateField(
-      'examples',
-      form.examples.map((e, i) => (i === index ? { ...e, [field]: value } : e))
-    )
+    updateField('examples', form.examples.map((e, i) => (i === index ? { ...e, [field]: value } : e)))
   }
 
   const addTestcase = () => {
@@ -58,25 +87,17 @@ export function ProblemForm({ form, onChange, tags }: Props) {
   }
 
   const removeTestcase = (index: number) => {
-    updateField(
-      'testcases',
-      form.testcases.filter((_, i) => i !== index)
-    )
+    updateField('testcases', form.testcases.filter((_, i) => i !== index))
   }
 
   const updateTestcase = (index: number, field: 'input' | 'output', value: string) => {
-    updateField(
-      'testcases',
-      form.testcases.map((e, i) => (i === index ? { ...e, [field]: value } : e))
-    )
+    updateField('testcases', form.testcases.map((e, i) => (i === index ? { ...e, [field]: value } : e)))
   }
 
   const toggleTag = (tagId: string) => {
     updateField(
       'tagIds',
-      form.tagIds.includes(tagId)
-        ? form.tagIds.filter((id) => id !== tagId)
-        : [...form.tagIds, tagId]
+      form.tagIds.includes(tagId) ? form.tagIds.filter((id) => id !== tagId) : [...form.tagIds, tagId]
     )
   }
 
@@ -97,18 +118,18 @@ export function ProblemForm({ form, onChange, tags }: Props) {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-                <Hash className="size-3.5 text-muted-foreground" />
-                난이도
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={30}
+              <label className="mb-1.5 block text-sm font-medium">난이도</label>
+              <select
                 value={form.difficulty}
-                onChange={(e) => updateField('difficulty', Number(e.target.value))}
+                onChange={(e) => updateField('difficulty', e.target.value as ProblemDifficulty)}
                 className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
-              />
+              >
+                {DIFFICULTIES.map((d) => (
+                  <option key={d.value} value={d.value}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
@@ -124,9 +145,7 @@ export function ProblemForm({ form, onChange, tags }: Props) {
                   onChange={(e) => updateField('timeLimit', Number(e.target.value))}
                   className="h-10 w-full rounded-lg border border-border bg-background px-3 pr-12 text-sm outline-none focus:border-primary"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                  ms
-                </span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">ms</span>
               </div>
             </div>
             <div>
@@ -143,16 +162,14 @@ export function ProblemForm({ form, onChange, tags }: Props) {
                   onChange={(e) => updateField('memoryLimit', Number(e.target.value))}
                   className="h-10 w-full rounded-lg border border-border bg-background px-3 pr-12 text-sm outline-none focus:border-primary"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                  MB
-                </span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">MB</span>
               </div>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">유형</label>
               <select
                 value={form.type}
-                onChange={(e) => updateField('type', e.target.value as ProblemFormData['type'])}
+                onChange={(e) => updateField('type', e.target.value as ProblemType)}
                 className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
               >
                 <option value="STANDARD">일반</option>
@@ -179,11 +196,7 @@ export function ProblemForm({ form, onChange, tags }: Props) {
               />
             </button>
             <div className="flex items-center gap-2">
-              {form.isPublic ? (
-                <Eye className="size-4 text-primary" />
-              ) : (
-                <EyeOff className="size-4 text-muted-foreground" />
-              )}
+              {form.isPublic ? <Eye className="size-4 text-primary" /> : <EyeOff className="size-4 text-muted-foreground" />}
               <span className="text-sm font-medium">{form.isPublic ? '공개' : '비공개'}</span>
             </div>
             <span className="text-sm text-muted-foreground">
@@ -231,14 +244,9 @@ export function ProblemForm({ form, onChange, tags }: Props) {
       <FormSection title="예제" description="사용자에게 보여줄 입출력 예제입니다">
         <div className="space-y-4">
           {form.examples.map((example, index) => (
-            <div
-              key={index}
-              className="relative rounded-lg border border-border bg-muted/20 p-4"
-            >
+            <div key={index} className="relative rounded-lg border border-border bg-muted/20 p-4">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  예제 {index + 1}
-                </span>
+                <span className="text-sm font-medium text-muted-foreground">예제 {index + 1}</span>
                 {form.examples.length > 1 && (
                   <button
                     type="button"
@@ -252,9 +260,7 @@ export function ProblemForm({ form, onChange, tags }: Props) {
               </div>
               <div className="grid gap-4 lg:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                    입력
-                  </label>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">입력</label>
                   <textarea
                     value={example.input}
                     onChange={(e) => updateExample(index, 'input', e.target.value)}
@@ -263,9 +269,7 @@ export function ProblemForm({ form, onChange, tags }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                    출력
-                  </label>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">출력</label>
                   <textarea
                     value={example.output}
                     onChange={(e) => updateExample(index, 'output', e.target.value)}
@@ -291,14 +295,9 @@ export function ProblemForm({ form, onChange, tags }: Props) {
       <FormSection title="테스트케이스" description="채점에 사용되는 테스트케이스입니다">
         <div className="space-y-4">
           {form.testcases.map((testcase, index) => (
-            <div
-              key={index}
-              className="relative rounded-lg border border-border bg-muted/20 p-4"
-            >
+            <div key={index} className="relative rounded-lg border border-border bg-muted/20 p-4">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  테스트케이스 {index + 1}
-                </span>
+                <span className="text-sm font-medium text-muted-foreground">테스트케이스 {index + 1}</span>
                 <button
                   type="button"
                   onClick={() => removeTestcase(index)}
@@ -310,9 +309,7 @@ export function ProblemForm({ form, onChange, tags }: Props) {
               </div>
               <div className="grid gap-4 lg:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                    입력
-                  </label>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">입력</label>
                   <textarea
                     value={testcase.input}
                     onChange={(e) => updateTestcase(index, 'input', e.target.value)}
@@ -321,9 +318,7 @@ export function ProblemForm({ form, onChange, tags }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                    출력
-                  </label>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">출력</label>
                   <textarea
                     value={testcase.output}
                     onChange={(e) => updateTestcase(index, 'output', e.target.value)}
