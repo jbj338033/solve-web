@@ -7,6 +7,7 @@ import Editor from '@monaco-editor/react'
 import { ArrowLeft, Play, Send, Loader2, Square, X, CheckCircle, XCircle } from 'lucide-react'
 import type { ProblemDetail } from '@/entities/problem'
 import { submissionApi, LANGUAGE_MAP, RESULT_LABELS, type JudgeResult } from '@/entities/submission'
+import { useEditorStore } from '@/entities/editor'
 import { ProblemViewer } from '@/widgets/problem-viewer'
 import { useResizer } from '@/shared/hooks'
 import { Resizer } from '@/shared/ui'
@@ -46,7 +47,7 @@ export function SolveWorkspace({ problem, contestId }: Props) {
   const horizontal = useResizer({ direction: 'horizontal', defaultValue: 50, min: 25, max: 75 })
   const vertical = useResizer({ direction: 'vertical', defaultValue: 65, min: 30, max: 85 })
 
-  const [language, setLanguage] = useState<(typeof LANGUAGES)[number]['value']>('cpp')
+  const { language, setLanguage } = useEditorStore()
   const [code, setCode] = useState('')
   const [stdinInput, setStdinInput] = useState('')
 
@@ -286,7 +287,7 @@ export function SolveWorkspace({ problem, contestId }: Props) {
           <div className="flex h-10 shrink-0 items-center border-b border-border px-3">
             <select
               value={language}
-              onChange={(e) => setLanguage(e.target.value as typeof language)}
+              onChange={(e) => setLanguage(e.target.value)}
               className="h-7 rounded-md border border-border bg-background px-2 text-xs outline-none transition-colors hover:bg-muted focus:ring-1 focus:ring-ring"
             >
               {LANGUAGES.map((l) => (
