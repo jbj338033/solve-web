@@ -295,7 +295,15 @@ export function ProblemsContent() {
                     >
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm">{problem.title}</span>
+                          <span
+                            className={cn(
+                              'text-sm',
+                              problem.status === 'SOLVED' && 'text-green-600',
+                              problem.status === 'ATTEMPTED' && 'text-amber-600'
+                            )}
+                          >
+                            {problem.title}
+                          </span>
                           {problem.type !== 'STANDARD' && (
                             <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">
                               {problem.type === 'SPECIAL_JUDGE' ? '스페셜 저지' : '인터랙티브'}

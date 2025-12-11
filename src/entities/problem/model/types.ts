@@ -23,6 +23,8 @@ export interface ProblemTag {
   name: string
 }
 
+export type ProblemStatus = 'SOLVED' | 'ATTEMPTED'
+
 export interface Problem {
   id: string
   title: string
@@ -31,6 +33,7 @@ export interface Problem {
   type: ProblemType
   createdAt: string
   isPublic: boolean
+  status: ProblemStatus | null
 }
 
 export interface ProblemDetail extends Problem {
