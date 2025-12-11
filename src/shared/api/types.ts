@@ -4,7 +4,7 @@ export interface CursorPage<T> {
 }
 
 export interface CursorParams {
-  [key: string]: string | number | boolean | undefined
   cursor?: string
   limit?: number
+  [key: string]: string | number | boolean | string[] | undefined
 }

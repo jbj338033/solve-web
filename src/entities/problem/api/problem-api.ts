@@ -1,15 +1,23 @@
 import { api, type CursorPage, type CursorParams } from '@/shared/api'
-import type { Problem, ProblemDetail } from '../model/types'
+import type { Problem, ProblemDetail, ProblemDifficulty, ProblemType, ProblemSort } from '../model/types'
+
+export interface ProblemFilterParams extends CursorParams {
+  difficulties?: ProblemDifficulty[]
+  type?: ProblemType
+  query?: string
+  tagIds?: string[]
+  sort?: ProblemSort
+}
 
 export interface CreateProblemRequest {
   title: string
   description: string
   inputFormat: string
   outputFormat: string
-  difficulty?: number
+  difficulty?: ProblemDifficulty
   timeLimit?: number
   memoryLimit?: number
-  type?: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
+  type?: ProblemType
   checkerCode?: string
   checkerLanguage?: string
   interactorCode?: string
@@ -24,10 +32,10 @@ export interface UpdateProblemRequest {
   description?: string
   inputFormat?: string
   outputFormat?: string
-  difficulty?: number
+  difficulty?: ProblemDifficulty
   timeLimit?: number
   memoryLimit?: number
-  type?: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
+  type?: ProblemType
   checkerCode?: string
   checkerLanguage?: string
   interactorCode?: string
@@ -38,7 +46,7 @@ export interface UpdateProblemRequest {
 }
 
 export const problemApi = {
-  getProblems: (params?: CursorParams) =>
+  getProblems: (params?: ProblemFilterParams) =>
     api.get<CursorPage<Problem>>('/problems', { params }),
 
   getProblem: (problemId: string) =>
