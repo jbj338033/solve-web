@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { type Problem } from '../model/types'
-import { DifficultyBadge } from './difficulty-badge'
+import { DifficultyBadge } from '@/shared/ui'
 
 export function ProblemItem({ problem }: { problem: Problem }) {
   return (

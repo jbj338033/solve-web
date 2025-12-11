@@ -3,4 +3,3 @@ export type { CreateProblemRequest, UpdateProblemRequest } from './api/problem-a
 export type { Problem, ProblemDetail, ProblemExample, ProblemType } from './model/types'
 export { ProblemItem } from './ui/problem-item'
 export { ProblemItemSkeleton } from './ui/problem-item-skeleton'
-export { DifficultyBadge } from './ui/difficulty-badge'
