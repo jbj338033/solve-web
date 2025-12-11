@@ -111,7 +111,7 @@ export default function AdminProblemsPage() {
                       <DifficultyBadge difficulty={problem.difficulty} />
                     </td>
                     <td className="px-4 py-3">
-                      {problem.public ? (
+                      {problem.isPublic ? (
                         <span className="flex items-center gap-1 text-sm text-green-600">
                           <Eye className="size-3.5" />
                           공개

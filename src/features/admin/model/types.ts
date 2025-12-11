@@ -24,7 +24,7 @@ export interface AdminProblem {
   type: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
   createdAt: string
   updatedAt: string
-  public: boolean
+  isPublic: boolean
 }
 
 export interface AdminProblemDetail extends AdminProblem {
@@ -61,7 +61,7 @@ export interface AdminContest {
   scoreboardType: 'REALTIME' | 'FREEZE' | 'AFTER_CONTEST'
   createdAt: string
   updatedAt: string
-  rated: boolean
+  isRated: boolean
 }
 
 export interface AdminContestDetail extends AdminContest {

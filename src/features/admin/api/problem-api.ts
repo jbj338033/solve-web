@@ -38,7 +38,7 @@ export interface CreateProblemRequest {
   interactorLanguage?: string
   examples?: ExampleRequest[]
   tagIds?: string[]
-  public?: boolean
+  isPublic?: boolean
 }
 
 export interface UpdateProblemRequest {
@@ -56,5 +56,5 @@ export interface UpdateProblemRequest {
   interactorLanguage?: string
   examples?: ExampleRequest[]
   tagIds?: string[]
-  public?: boolean
+  isPublic?: boolean
 }

@@ -11,7 +11,7 @@ export interface Contest {
   scoringType: ScoringType
   scoreboardType: ScoreboardType
   createdAt: string
-  rated: boolean
+  isRated: boolean
 }
 
 export interface ContestDetail extends Contest {

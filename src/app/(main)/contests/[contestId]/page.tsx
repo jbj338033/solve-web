@@ -116,7 +116,7 @@ export default function ContestDetailPage({ params }: Props) {
                   비공개
                 </span>
               )}
-              {contest.rated && (
+              {contest.isRated && (
                 <span className="flex items-center gap-1 rounded bg-amber-500/10 px-2 py-0.5 text-xs text-amber-600">
                   <Trophy className="size-3" />
                   Rated

@@ -17,7 +17,7 @@ export interface Problem {
   author: ProblemAuthor
   type: ProblemType
   createdAt: string
-  public: boolean
+  isPublic: boolean
 }
 
 export interface ProblemDetail extends Problem {
