@@ -2,13 +2,21 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Search, Loader2, ChevronDown, X } from 'lucide-react'
+import { Search, Loader2, SlidersHorizontal, X } from 'lucide-react'
 import { problemApi, type Problem, type ProblemDifficulty, type ProblemSort } from '@/entities/problem'
 import { tagApi, type Tag } from '@/entities/tag'
 import { DifficultyBadge } from '@/shared/ui'
 import { cn } from '@/shared/lib'
 
 const DIFFICULTY_TIERS = ['MOON', 'STAR', 'COMET', 'PLANET', 'NEBULA', 'GALAXY'] as const
+const TIER_STYLES: Record<string, { base: string; active: string }> = {
+  MOON: { base: 'border-zinc-300 text-zinc-500', active: 'border-zinc-400 bg-zinc-100 text-zinc-600' },
+  STAR: { base: 'border-amber-300 text-amber-500', active: 'border-amber-400 bg-amber-100 text-amber-600' },
+  COMET: { base: 'border-teal-300 text-teal-500', active: 'border-teal-400 bg-teal-100 text-teal-600' },
+  PLANET: { base: 'border-blue-300 text-blue-500', active: 'border-blue-400 bg-blue-100 text-blue-600' },
+  NEBULA: { base: 'border-purple-300 text-purple-500', active: 'border-purple-400 bg-purple-100 text-purple-600' },
+  GALAXY: { base: 'border-rose-300 text-rose-500', active: 'border-rose-400 bg-rose-100 text-rose-600' },
+}
 const SORT_OPTIONS: { value: ProblemSort; label: string }[] = [
   { value: 'LATEST', label: '최신순' },
   { value: 'DIFFICULTY_ASC', label: '난이도 낮은순' },
@@ -87,10 +95,10 @@ export function ProblemsContent() {
   }, [loadProblems])
 
   useEffect(() => {
-    if (selectedDifficulties.length > 0 || selectedTags.length > 0 || sort !== 'LATEST') {
+    if (selectedDifficulties.length > 0 || selectedTags.length > 0) {
       setShowFilters(true)
     }
-  }, [selectedDifficulties.length, selectedTags.length, sort])
+  }, [selectedDifficulties.length, selectedTags.length])
 
   const loadMore = async () => {
     if (!hasNext || isLoadingMore || problems.length === 0) return
@@ -107,7 +115,7 @@ export function ProblemsContent() {
     updateParams({ sort: value === 'LATEST' ? null : value })
   }
 
-  const toggleDifficulty = (tier: string) => {
+  const toggleTier = (tier: string) => {
     const tierDifficulties = [5, 4, 3, 2, 1].map((n) => `${tier}_${n}`)
     const allSelected = tierDifficulties.every((d) => selectedDifficulties.includes(d as ProblemDifficulty))
 
@@ -117,6 +125,13 @@ export function ProblemsContent() {
     } else {
       newDifficulties = [...selectedDifficulties.filter((d) => !tierDifficulties.includes(d)), ...tierDifficulties]
     }
+    updateParams({ difficulties: newDifficulties.length > 0 ? newDifficulties.join(',') : null })
+  }
+
+  const toggleDifficulty = (difficulty: string) => {
+    const newDifficulties = selectedDifficulties.includes(difficulty as ProblemDifficulty)
+      ? selectedDifficulties.filter((d) => d !== difficulty)
+      : [...selectedDifficulties, difficulty]
     updateParams({ difficulties: newDifficulties.length > 0 ? newDifficulties.join(',') : null })
   }
 
@@ -131,7 +146,8 @@ export function ProblemsContent() {
     router.push('/problems', { scroll: false })
   }
 
-  const hasActiveFilters = query || selectedDifficulties.length > 0 || selectedTags.length > 0 || sort !== 'LATEST'
+  const filterCount = selectedDifficulties.length + selectedTags.length
+  const hasActiveFilters = query || filterCount > 0 || sort !== 'LATEST'
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -139,97 +155,121 @@ export function ProblemsContent() {
         <h1 className="text-xl font-semibold">문제</h1>
         <div className="flex items-center gap-2">
           <SearchInput defaultValue={query} onSearch={handleQueryChange} />
+          <select
+            value={sort}
+            onChange={(e) => handleSortChange(e.target.value as ProblemSort)}
+            className="h-9 rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-primary"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
               'flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
-              showFilters || hasActiveFilters
+              showFilters || filterCount > 0
                 ? 'border-primary bg-primary/5 text-primary'
                 : 'border-border text-muted-foreground hover:bg-muted/50'
             )}
           >
+            <SlidersHorizontal className="size-4" />
             필터
-            <ChevronDown className={cn('size-4 transition-transform', showFilters && 'rotate-180')} />
+            {filterCount > 0 && (
+              <span className="flex size-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                {filterCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
 
       {showFilters && (
-        <div className="mt-4 space-y-4 rounded-lg border border-border bg-muted/20 p-4">
-          <div>
-            <div className="mb-2 text-sm font-medium">난이도</div>
-            <div className="flex flex-wrap gap-2">
-              {DIFFICULTY_TIERS.map((tier) => {
-                const tierDifficulties = [5, 4, 3, 2, 1].map((n) => `${tier}_${n}`)
-                const selectedCount = tierDifficulties.filter((d) => selectedDifficulties.includes(d as ProblemDifficulty)).length
-                const isSelected = selectedCount > 0
-
-                return (
-                  <button
-                    key={tier}
-                    onClick={() => toggleDifficulty(tier)}
-                    className={cn(
-                      'rounded-full border px-3 py-1 text-sm transition-colors',
-                      isSelected
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border text-muted-foreground hover:border-primary/50'
-                    )}
-                  >
-                    {tier.charAt(0) + tier.slice(1).toLowerCase()}
-                    {selectedCount > 0 && selectedCount < 5 && ` (${selectedCount})`}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {tags.length > 0 && (
+        <div className="mt-4 rounded-xl border border-border bg-muted/30 p-5">
+          <div className="space-y-5">
             <div>
-              <div className="mb-2 text-sm font-medium">태그</div>
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <button
-                    key={tag.id}
-                    onClick={() => toggleTag(tag.id)}
-                    className={cn(
-                      'rounded-full border px-3 py-1 text-sm transition-colors',
-                      selectedTags.includes(tag.id)
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border text-muted-foreground hover:border-primary/50'
-                    )}
-                  >
-                    {tag.name}
-                  </button>
-                ))}
+              <div className="mb-3 text-sm font-medium">난이도</div>
+              <div className="space-y-2">
+                {DIFFICULTY_TIERS.map((tier) => {
+                  const tierDifficulties = [5, 4, 3, 2, 1].map((n) => `${tier}_${n}`)
+                  const selectedCount = tierDifficulties.filter((d) =>
+                    selectedDifficulties.includes(d as ProblemDifficulty)
+                  ).length
+                  const allSelected = selectedCount === 5
+
+                  return (
+                    <div key={tier} className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleTier(tier)}
+                        className={cn(
+                          'w-20 rounded-md border py-1.5 text-xs font-medium transition-colors',
+                          allSelected ? TIER_STYLES[tier].active : TIER_STYLES[tier].base,
+                          'hover:opacity-80'
+                        )}
+                      >
+                        {tier.charAt(0) + tier.slice(1).toLowerCase()}
+                      </button>
+                      <div className="flex gap-1">
+                        {[5, 4, 3, 2, 1].map((level) => {
+                          const difficulty = `${tier}_${level}`
+                          const isSelected = selectedDifficulties.includes(difficulty as ProblemDifficulty)
+                          return (
+                            <button
+                              key={level}
+                              onClick={() => toggleDifficulty(difficulty)}
+                              className={cn(
+                                'size-8 rounded-md border text-xs font-medium transition-colors',
+                                isSelected ? TIER_STYLES[tier].active : 'border-border text-muted-foreground',
+                                'hover:opacity-80'
+                              )}
+                            >
+                              {level}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
-          )}
 
-          <div className="flex items-center justify-between border-t border-border pt-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">정렬:</span>
-              <select
-                value={sort}
-                onChange={(e) => handleSortChange(e.target.value as ProblemSort)}
-                className="h-8 rounded-lg border border-border bg-background px-2 text-sm outline-none focus:border-primary"
-              >
-                {SORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <X className="size-3.5" />
-                필터 초기화
-              </button>
+            {tags.length > 0 && (
+              <div>
+                <div className="mb-3 text-sm font-medium">태그</div>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      onClick={() => toggleTag(tag.id)}
+                      className={cn(
+                        'rounded-full border px-3 py-1 text-sm transition-colors',
+                        selectedTags.includes(tag.id)
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border text-muted-foreground hover:border-primary/50'
+                      )}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
+
+          {hasActiveFilters && (
+            <div className="mt-4 flex justify-end border-t border-border pt-4">
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-4" />
+                필터 초기화
+              </button>
+            </div>
+          )}
         </div>
       )}
 
