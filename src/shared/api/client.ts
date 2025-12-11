@@ -81,11 +81,13 @@ class ApiClient {
       throw new ApiError(error.code, error.message, response.status)
     }
 
-    if (response.status === 201 || response.status === 204) {
+    if (response.status === 204) {
       return undefined as T
     }
 
-    return response.json()
+    const text = await response.text()
+    if (!text) return undefined as T
+    return JSON.parse(text)
   }
 
   get<T>(endpoint: string, config?: RequestConfig) {
