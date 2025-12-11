@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, Loader2, ChevronDown, X } from 'lucide-react'
 import { problemApi, type Problem, type ProblemDifficulty, type ProblemSort } from '@/entities/problem'
@@ -28,8 +28,17 @@ export function ProblemsContent() {
 
   const query = searchParams.get('query') || ''
   const sort = (searchParams.get('sort') as ProblemSort) || 'LATEST'
-  const selectedDifficulties = searchParams.get('difficulties')?.split(',').filter(Boolean) as ProblemDifficulty[] || []
-  const selectedTags = searchParams.get('tags')?.split(',').filter(Boolean) || []
+  const difficultiesParam = searchParams.get('difficulties') || ''
+  const tagsParam = searchParams.get('tags') || ''
+
+  const selectedDifficulties = useMemo(
+    () => (difficultiesParam ? difficultiesParam.split(',') : []) as ProblemDifficulty[],
+    [difficultiesParam]
+  )
+  const selectedTags = useMemo(
+    () => (tagsParam ? tagsParam.split(',') : []),
+    [tagsParam]
+  )
 
   const updateParams = useCallback((updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -41,7 +50,7 @@ export function ProblemsContent() {
       }
     })
     const queryString = params.toString()
-    router.push(queryString ? `?${queryString}` : '/problems', { scroll: false })
+    router.push(queryString ? `/problems?${queryString}` : '/problems', { scroll: false })
   }, [router, searchParams])
 
   const loadProblems = useCallback(async (cursor?: string) => {
@@ -78,7 +87,7 @@ export function ProblemsContent() {
     if (selectedDifficulties.length > 0 || selectedTags.length > 0 || sort !== 'LATEST') {
       setShowFilters(true)
     }
-  }, [])
+  }, [selectedDifficulties.length, selectedTags.length, sort])
 
   const loadMore = async () => {
     if (!hasNext || isLoadingMore || problems.length === 0) return
@@ -87,11 +96,11 @@ export function ProblemsContent() {
     setIsLoadingMore(false)
   }
 
-  const setQuery = (value: string) => {
+  const handleQueryChange = (value: string) => {
     updateParams({ query: value || null })
   }
 
-  const setSort = (value: ProblemSort) => {
+  const handleSortChange = (value: ProblemSort) => {
     updateParams({ sort: value === 'LATEST' ? null : value })
   }
 
@@ -126,16 +135,7 @@ export function ProblemsContent() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">문제</h1>
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="검색"
-              defaultValue={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="h-9 w-48 rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
-            />
-          </div>
+          <SearchInput defaultValue={query} onSearch={handleQueryChange} />
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
@@ -207,7 +207,7 @@ export function ProblemsContent() {
               <span className="text-sm text-muted-foreground">정렬:</span>
               <select
                 value={sort}
-                onChange={(e) => setSort(e.target.value as ProblemSort)}
+                onChange={(e) => handleSortChange(e.target.value as ProblemSort)}
                 className="h-8 rounded-lg border border-border bg-background px-2 text-sm outline-none focus:border-primary"
               >
                 {SORT_OPTIONS.map((opt) => (
@@ -232,28 +232,7 @@ export function ProblemsContent() {
 
       <div className="mt-6">
         {isLoading ? (
-          <div className="overflow-hidden rounded-lg border border-border">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">제목</th>
-                  <th className="w-28 px-4 py-3 text-left text-sm font-medium text-muted-foreground">난이도</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...Array(10)].map((_, i) => (
-                  <tr key={i} className="border-b border-border last:border-0">
-                    <td className="px-4 py-3.5">
-                      <div className="h-4 w-48 animate-pulse rounded bg-muted" />
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="h-5 w-16 animate-pulse rounded bg-muted" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <LoadingSkeleton />
         ) : problems.length > 0 ? (
           <>
             <div className="overflow-hidden rounded-lg border border-border">
@@ -315,6 +294,59 @@ export function ProblemsContent() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function SearchInput({ defaultValue, onSearch }: { defaultValue: string; onSearch: (value: string) => void }) {
+  const [value, setValue] = useState(defaultValue)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (value !== defaultValue) {
+        onSearch(value)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [value, defaultValue, onSearch])
+
+  return (
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <input
+        type="text"
+        placeholder="검색"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="h-9 w-48 rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
+      />
+    </div>
+  )
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-lg border border-border">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-border bg-muted/50">
+            <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">제목</th>
+            <th className="w-28 px-4 py-3 text-left text-sm font-medium text-muted-foreground">난이도</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...Array(10)].map((_, i) => (
+            <tr key={i} className="border-b border-border last:border-0">
+              <td className="px-4 py-3.5">
+                <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+              </td>
+              <td className="px-4 py-3.5">
+                <div className="h-5 w-16 animate-pulse rounded bg-muted" />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
