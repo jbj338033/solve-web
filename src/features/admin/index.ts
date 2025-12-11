@@ -28,3 +28,5 @@ export type {
   AdminTag,
   AdminBanner,
 } from './model/types'
+
+export { ProblemForm, type ProblemFormData } from './ui'
