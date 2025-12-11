@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import { ArrowLeft, Loader2, Save, Plus, Trash2, Search, GripVertical } from 'lucide-react'
 import { adminWorkbookApi, adminProblemApi, type AdminProblem } from '@/features/admin'
 import { DifficultyBadge } from '@/shared/ui'
+import type { ProblemDifficulty } from '@/entities/problem'
 
 export default function AdminWorkbookNewPage() {
   const router = useRouter()
@@ -15,7 +16,7 @@ export default function AdminWorkbookNewPage() {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    problems: [] as { id: string; title: string; difficulty: number }[],
+    problems: [] as { id: string; title: string; difficulty: ProblemDifficulty }[],
   })
 
   const [searchQuery, setSearchQuery] = useState('')

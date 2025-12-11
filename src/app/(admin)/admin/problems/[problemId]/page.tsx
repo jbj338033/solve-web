@@ -29,7 +29,7 @@ export default function AdminProblemDetailPage({ params }: Props) {
     description: '',
     inputFormat: '',
     outputFormat: '',
-    difficulty: 1,
+    difficulty: 'UNRATED',
     timeLimit: 1000,
     memoryLimit: 256,
     type: 'STANDARD',
