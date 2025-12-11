@@ -1,6 +1,27 @@
 import { api, type CursorPage, type CursorParams } from '@/shared/api'
 import type { AdminProblem, AdminProblemDetail } from '../model/types'
 
+export interface CreateProblemRequest {
+  title: string
+  description: string
+  inputFormat: string
+  outputFormat: string
+  difficulty?: number
+  timeLimit?: number
+  memoryLimit?: number
+  type?: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
+  checkerCode?: string
+  checkerLanguage?: string
+  interactorCode?: string
+  interactorLanguage?: string
+  examples?: { input: string; output: string }[]
+  testcases?: { input: string; output: string }[]
+  tagIds?: string[]
+  isPublic?: boolean
+}
+
+export type UpdateProblemRequest = Partial<CreateProblemRequest>
+
 export const adminProblemApi = {
   getProblems: (params?: CursorParams) =>
     api.get<CursorPage<AdminProblem>>('/admin/problems', { params }),
@@ -16,52 +37,4 @@ export const adminProblemApi = {
 
   deleteProblem: (problemId: string) =>
     api.delete<void>(`/admin/problems/${problemId}`),
-}
-
-export interface ExampleRequest {
-  input: string
-  output: string
-}
-
-export interface TestCaseRequest {
-  input: string
-  output: string
-}
-
-export interface CreateProblemRequest {
-  title: string
-  description: string
-  inputFormat: string
-  outputFormat: string
-  difficulty?: number
-  timeLimit?: number
-  memoryLimit?: number
-  type?: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
-  checkerCode?: string
-  checkerLanguage?: string
-  interactorCode?: string
-  interactorLanguage?: string
-  examples?: ExampleRequest[]
-  testcases?: TestCaseRequest[]
-  tagIds?: string[]
-  isPublic?: boolean
-}
-
-export interface UpdateProblemRequest {
-  title?: string
-  description?: string
-  inputFormat?: string
-  outputFormat?: string
-  difficulty?: number
-  timeLimit?: number
-  memoryLimit?: number
-  type?: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
-  checkerCode?: string
-  checkerLanguage?: string
-  interactorCode?: string
-  interactorLanguage?: string
-  examples?: ExampleRequest[]
-  testcases?: TestCaseRequest[]
-  tagIds?: string[]
-  isPublic?: boolean
 }

@@ -1,6 +1,12 @@
 import { api } from '@/shared/api'
 import type { AdminTag } from '../model/types'
 
+export interface CreateTagRequest {
+  name: string
+}
+
+export type UpdateTagRequest = CreateTagRequest
+
 export const adminTagApi = {
   getTags: () =>
     api.get<AdminTag[]>('/admin/tags'),
@@ -13,12 +19,4 @@ export const adminTagApi = {
 
   deleteTag: (tagId: string) =>
     api.delete<void>(`/admin/tags/${tagId}`),
-}
-
-export interface CreateTagRequest {
-  name: string
-}
-
-export interface UpdateTagRequest {
-  name: string
 }

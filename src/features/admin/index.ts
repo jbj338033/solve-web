@@ -1,8 +1,8 @@
 export { adminProblemApi } from './api/problem-api'
-export type { CreateProblemRequest, UpdateProblemRequest, ExampleRequest, TestCaseRequest } from './api/problem-api'
+export type { CreateProblemRequest, UpdateProblemRequest } from './api/problem-api'
 
 export { adminContestApi } from './api/contest-api'
-export type { CreateContestRequest, UpdateContestRequest, ContestProblemRequest } from './api/contest-api'
+export type { CreateContestRequest, UpdateContestRequest } from './api/contest-api'
 
 export { adminWorkbookApi } from './api/workbook-api'
 export type { CreateWorkbookRequest, UpdateWorkbookRequest } from './api/workbook-api'

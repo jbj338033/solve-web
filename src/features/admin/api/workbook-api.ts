@@ -1,6 +1,14 @@
 import { api, type CursorPage, type CursorParams } from '@/shared/api'
 import type { AdminWorkbook, AdminWorkbookDetail } from '../model/types'
 
+export interface CreateWorkbookRequest {
+  title: string
+  description?: string
+  problemIds?: string[]
+}
+
+export type UpdateWorkbookRequest = Partial<CreateWorkbookRequest>
+
 export const adminWorkbookApi = {
   getWorkbooks: (params?: CursorParams) =>
     api.get<CursorPage<AdminWorkbook>>('/admin/workbooks', { params }),
@@ -16,16 +24,4 @@ export const adminWorkbookApi = {
 
   deleteWorkbook: (workbookId: string) =>
     api.delete<void>(`/admin/workbooks/${workbookId}`),
-}
-
-export interface CreateWorkbookRequest {
-  title: string
-  description?: string
-  problemIds?: string[]
-}
-
-export interface UpdateWorkbookRequest {
-  title?: string
-  description?: string
-  problemIds?: string[]
 }
