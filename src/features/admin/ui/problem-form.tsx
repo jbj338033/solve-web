@@ -2,6 +2,7 @@
 
 import { Plus, Trash2, Clock, HardDrive, Hash, Eye, EyeOff } from 'lucide-react'
 import { MarkdownEditor } from '@/widgets'
+import { FormSection } from '@/shared/ui'
 import { cn } from '@/shared/lib'
 
 export interface ProblemFormData {
@@ -14,6 +15,7 @@ export interface ProblemFormData {
   memoryLimit: number
   type: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
   examples: { input: string; output: string }[]
+  testcases: { input: string; output: string }[]
   tagIds: string[]
   isPublic: boolean
 }
@@ -27,26 +29,6 @@ interface Props {
   form: ProblemFormData
   onChange: (form: ProblemFormData) => void
   tags: Tag[]
-}
-
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string
-  description?: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="rounded-xl border border-border bg-card">
-      <div className="border-b border-border px-5 py-4">
-        <h2 className="font-medium">{title}</h2>
-        {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
-      </div>
-      <div className="p-5">{children}</div>
-    </section>
-  )
 }
 
 export function ProblemForm({ form, onChange, tags }: Props) {
@@ -72,6 +54,24 @@ export function ProblemForm({ form, onChange, tags }: Props) {
     )
   }
 
+  const addTestcase = () => {
+    updateField('testcases', [...form.testcases, { input: '', output: '' }])
+  }
+
+  const removeTestcase = (index: number) => {
+    updateField(
+      'testcases',
+      form.testcases.filter((_, i) => i !== index)
+    )
+  }
+
+  const updateTestcase = (index: number, field: 'input' | 'output', value: string) => {
+    updateField(
+      'testcases',
+      form.testcases.map((e, i) => (i === index ? { ...e, [field]: value } : e))
+    )
+  }
+
   const toggleTag = (tagId: string) => {
     updateField(
       'tagIds',
@@ -83,7 +83,7 @@ export function ProblemForm({ form, onChange, tags }: Props) {
 
   return (
     <div className="space-y-6">
-      <Section title="기본 정보" description="문제의 기본 설정을 입력합니다">
+      <FormSection title="기본 정보" description="문제의 기본 설정을 입력합니다">
         <div className="space-y-5">
           <div>
             <label className="mb-1.5 block text-sm font-medium">제목</label>
@@ -192,9 +192,9 @@ export function ProblemForm({ form, onChange, tags }: Props) {
             </span>
           </div>
         </div>
-      </Section>
+      </FormSection>
 
-      <Section title="문제 내용" description="문제 설명과 입출력 형식을 작성합니다">
+      <FormSection title="문제 내용" description="문제 설명과 입출력 형식을 작성합니다">
         <div className="space-y-5">
           <div>
             <label className="mb-1.5 block text-sm font-medium">문제 설명</label>
@@ -227,9 +227,9 @@ export function ProblemForm({ form, onChange, tags }: Props) {
             </div>
           </div>
         </div>
-      </Section>
+      </FormSection>
 
-      <Section title="예제" description="입출력 예제를 추가합니다">
+      <FormSection title="예제" description="사용자에게 보여줄 입출력 예제입니다">
         <div className="space-y-4">
           {form.examples.map((example, index) => (
             <div
@@ -287,9 +287,67 @@ export function ProblemForm({ form, onChange, tags }: Props) {
             예제 추가
           </button>
         </div>
-      </Section>
+      </FormSection>
 
-      <Section title="태그" description="문제에 해당하는 알고리즘 태그를 선택합니다">
+      <FormSection title="테스트케이스" description="채점에 사용되는 테스트케이스입니다">
+        <div className="space-y-4">
+          {form.testcases.map((testcase, index) => (
+            <div
+              key={index}
+              className="relative rounded-lg border border-border bg-muted/20 p-4"
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">
+                  테스트케이스 {index + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeTestcase(index)}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-red-500"
+                >
+                  <Trash2 className="size-3.5" />
+                  삭제
+                </button>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    입력
+                  </label>
+                  <textarea
+                    value={testcase.input}
+                    onChange={(e) => updateTestcase(index, 'input', e.target.value)}
+                    rows={4}
+                    className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    출력
+                  </label>
+                  <textarea
+                    value={testcase.output}
+                    onChange={(e) => updateTestcase(index, 'output', e.target.value)}
+                    rows={4}
+                    className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={addTestcase}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-3 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          >
+            <Plus className="size-4" />
+            테스트케이스 추가
+          </button>
+        </div>
+      </FormSection>
+
+      <FormSection title="태그" description="문제에 해당하는 알고리즘 태그를 선택합니다">
         {tags.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
@@ -311,7 +369,7 @@ export function ProblemForm({ form, onChange, tags }: Props) {
         ) : (
           <p className="text-sm text-muted-foreground">등록된 태그가 없습니다</p>
         )}
-      </Section>
+      </FormSection>
     </div>
   )
 }

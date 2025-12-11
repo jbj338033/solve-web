@@ -22,6 +22,7 @@ const initialForm: ProblemFormData = {
   memoryLimit: 256,
   type: 'STANDARD',
   examples: [{ input: '', output: '' }],
+  testcases: [],
   tagIds: [],
   isPublic: false,
 }
@@ -58,6 +59,7 @@ export default function AdminProblemNewPage() {
     setIsSaving(true)
     try {
       const examples = form.examples.filter((e) => e.input.trim() || e.output.trim())
+      const testcases = form.testcases.filter((t) => t.input.trim() || t.output.trim())
       await adminProblemApi.createProblem({
         title: form.title,
         description: form.description,
@@ -68,8 +70,9 @@ export default function AdminProblemNewPage() {
         memoryLimit: form.memoryLimit,
         type: form.type,
         examples: examples.length > 0 ? examples : undefined,
+        testcases: testcases.length > 0 ? testcases : undefined,
         tagIds: form.tagIds.length > 0 ? form.tagIds : undefined,
-        isPublic: form.isPublic,
+        public: form.isPublic,
       })
       toast.success('문제가 생성되었습니다')
       router.push('/admin/problems')

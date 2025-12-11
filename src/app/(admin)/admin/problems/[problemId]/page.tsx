@@ -34,6 +34,7 @@ export default function AdminProblemDetailPage({ params }: Props) {
     memoryLimit: 256,
     type: 'STANDARD',
     examples: [{ input: '', output: '' }],
+    testcases: [],
     tagIds: [],
     isPublic: false,
   })
@@ -59,6 +60,7 @@ export default function AdminProblemDetailPage({ params }: Props) {
           problemData.examples.length > 0
             ? problemData.examples.map((e) => ({ input: e.input, output: e.output }))
             : [{ input: '', output: '' }],
+        testcases: problemData.testcases.map((t) => ({ input: t.input, output: t.output })),
         tagIds: problemData.tags.map((t) => t.id),
         isPublic: problemData.isPublic,
       })
@@ -83,8 +85,18 @@ export default function AdminProblemDetailPage({ params }: Props) {
     setIsSaving(true)
     try {
       await adminProblemApi.updateProblem(problemId, {
-        ...form,
+        title: form.title,
+        description: form.description,
+        inputFormat: form.inputFormat,
+        outputFormat: form.outputFormat,
+        difficulty: form.difficulty,
+        timeLimit: form.timeLimit,
+        memoryLimit: form.memoryLimit,
+        type: form.type,
         examples: form.examples.filter((e) => e.input.trim() || e.output.trim()),
+        testcases: form.testcases.filter((t) => t.input.trim() || t.output.trim()),
+        tagIds: form.tagIds,
+        public: form.isPublic,
       })
       toast.success('저장되었습니다')
     } catch {
