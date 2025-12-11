@@ -1,8 +1,7 @@
 'use client'
 
 import { Plus, Trash2, Clock, HardDrive, Hash, Eye, EyeOff } from 'lucide-react'
-import { MarkdownEditor } from '@/widgets'
-import { FormSection } from '@/shared/ui'
+import { FormSection, MarkdownEditor } from '@/shared/ui'
 import { cn } from '@/shared/lib'
 
 export interface ProblemFormData {
