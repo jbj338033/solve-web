@@ -9,10 +9,10 @@ export const adminBannerApi = {
     api.get<AdminBanner>(`/admin/banners/${bannerId}`),
 
   createBanner: (data: CreateBannerRequest) =>
-    api.post<AdminBanner>('/admin/banners', data),
+    api.post<void>('/admin/banners', data),
 
   updateBanner: (bannerId: string, data: UpdateBannerRequest) =>
-    api.patch<AdminBanner>(`/admin/banners/${bannerId}`, data),
+    api.patch<void>(`/admin/banners/${bannerId}`, data),
 
   deleteBanner: (bannerId: string) =>
     api.delete<void>(`/admin/banners/${bannerId}`),

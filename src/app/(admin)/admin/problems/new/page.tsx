@@ -58,7 +58,7 @@ export default function AdminProblemNewPage() {
     setIsSaving(true)
     try {
       const examples = form.examples.filter((e) => e.input.trim() || e.output.trim())
-      const result = await adminProblemApi.createProblem({
+      await adminProblemApi.createProblem({
         title: form.title,
         description: form.description,
         inputFormat: form.inputFormat,
@@ -72,7 +72,7 @@ export default function AdminProblemNewPage() {
         isPublic: form.isPublic,
       })
       toast.success('문제가 생성되었습니다')
-      router.push(`/admin/problems/${result.id}`)
+      router.push('/admin/problems')
     } catch {
       toast.error('문제 생성에 실패했습니다')
     } finally {

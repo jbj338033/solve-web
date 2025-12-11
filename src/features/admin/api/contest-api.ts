@@ -9,7 +9,7 @@ export const adminContestApi = {
     api.get<AdminContestDetail>(`/admin/contests/${contestId}`),
 
   createContest: (data: CreateContestRequest) =>
-    api.post<{ id: string }>('/admin/contests', data),
+    api.post<void>('/admin/contests', data),
 
   updateContest: (contestId: string, data: UpdateContestRequest) =>
     api.patch<void>(`/admin/contests/${contestId}`, data),

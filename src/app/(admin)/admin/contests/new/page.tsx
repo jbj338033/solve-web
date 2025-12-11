@@ -40,7 +40,7 @@ export default function AdminContestNewPage() {
 
     setIsSaving(true)
     try {
-      const result = await adminContestApi.createContest({
+      await adminContestApi.createContest({
         title: form.title,
         description: form.description,
         startAt: new Date(form.startAt).toISOString(),
@@ -52,7 +52,7 @@ export default function AdminContestNewPage() {
         problems: form.problems.map((p) => ({ problemId: p.problemId, score: p.score })),
       })
       toast.success('대회가 생성되었습니다')
-      router.push(`/admin/contests/${result.id}`)
+      router.push('/admin/contests')
     } catch {
       toast.error('대회 생성에 실패했습니다')
     } finally {

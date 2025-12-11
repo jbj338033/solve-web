@@ -33,10 +33,10 @@ export default function AdminTagsPage() {
     if (!newTagName.trim()) return
     setIsCreating(true)
     try {
-      const tag = await adminTagApi.createTag({ name: newTagName.trim() })
-      setTags((prev) => [...prev, tag])
+      await adminTagApi.createTag({ name: newTagName.trim() })
       setNewTagName('')
       toast.success('태그가 생성되었습니다')
+      loadTags()
     } catch {
       toast.error('태그 생성에 실패했습니다')
     } finally {
@@ -47,10 +47,10 @@ export default function AdminTagsPage() {
   const handleUpdate = async (tagId: string) => {
     if (!editingName.trim()) return
     try {
-      const tag = await adminTagApi.updateTag(tagId, { name: editingName.trim() })
-      setTags((prev) => prev.map((t) => (t.id === tagId ? tag : t)))
+      await adminTagApi.updateTag(tagId, { name: editingName.trim() })
       setEditingId(null)
       toast.success('태그가 수정되었습니다')
+      loadTags()
     } catch {
       toast.error('태그 수정에 실패했습니다')
     }

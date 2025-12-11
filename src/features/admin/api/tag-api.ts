@@ -6,10 +6,10 @@ export const adminTagApi = {
     api.get<AdminTag[]>('/admin/tags'),
 
   createTag: (data: CreateTagRequest) =>
-    api.post<AdminTag>('/admin/tags', data),
+    api.post<void>('/admin/tags', data),
 
   updateTag: (tagId: string, data: UpdateTagRequest) =>
-    api.patch<AdminTag>(`/admin/tags/${tagId}`, data),
+    api.patch<void>(`/admin/tags/${tagId}`, data),
 
   deleteTag: (tagId: string) =>
     api.delete<void>(`/admin/tags/${tagId}`),

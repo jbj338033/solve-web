@@ -73,15 +73,14 @@ export default function AdminBannersPage() {
     setIsSubmitting(true)
     try {
       if (editingId) {
-        const banner = await adminBannerApi.updateBanner(editingId, formData)
-        setBanners((prev) => prev.map((b) => (b.id === editingId ? banner : b)))
+        await adminBannerApi.updateBanner(editingId, formData)
         toast.success('배너가 수정되었습니다')
       } else {
-        const banner = await adminBannerApi.createBanner(formData)
-        setBanners((prev) => [...prev, banner])
+        await adminBannerApi.createBanner(formData)
         toast.success('배너가 생성되었습니다')
       }
       resetForm()
+      loadBanners()
     } catch {
       toast.error(editingId ? '배너 수정에 실패했습니다' : '배너 생성에 실패했습니다')
     } finally {

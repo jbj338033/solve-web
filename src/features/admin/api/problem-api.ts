@@ -9,10 +9,10 @@ export const adminProblemApi = {
     api.get<AdminProblemDetail>(`/admin/problems/${problemId}`),
 
   createProblem: (data: CreateProblemRequest) =>
-    api.post<{ id: string }>('/admin/problems', data),
+    api.post<void>('/admin/problems', data),
 
   updateProblem: (problemId: string, data: UpdateProblemRequest) =>
-    api.patch<AdminProblemDetail>(`/admin/problems/${problemId}`, data),
+    api.patch<void>(`/admin/problems/${problemId}`, data),
 
   deleteProblem: (problemId: string) =>
     api.delete<void>(`/admin/problems/${problemId}`),

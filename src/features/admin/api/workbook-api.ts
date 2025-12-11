@@ -9,10 +9,10 @@ export const adminWorkbookApi = {
     api.get<AdminWorkbookDetail>(`/admin/workbooks/${workbookId}`),
 
   createWorkbook: (data: CreateWorkbookRequest) =>
-    api.post<{ id: string }>('/admin/workbooks', data),
+    api.post<void>('/admin/workbooks', data),
 
   updateWorkbook: (workbookId: string, data: UpdateWorkbookRequest) =>
-    api.patch<AdminWorkbookDetail>(`/admin/workbooks/${workbookId}`, data),
+    api.patch<void>(`/admin/workbooks/${workbookId}`, data),
 
   deleteWorkbook: (workbookId: string) =>
     api.delete<void>(`/admin/workbooks/${workbookId}`),

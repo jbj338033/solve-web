@@ -30,13 +30,13 @@ export default function AdminWorkbookNewPage() {
 
     setIsSaving(true)
     try {
-      const result = await adminWorkbookApi.createWorkbook({
+      await adminWorkbookApi.createWorkbook({
         title: form.title,
         description: form.description,
         problemIds: form.problems.map((p) => p.id),
       })
       toast.success('문제집이 생성되었습니다')
-      router.push(`/admin/workbooks/${result.id}`)
+      router.push('/admin/workbooks')
     } catch {
       toast.error('문제집 생성에 실패했습니다')
     } finally {
