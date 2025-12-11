@@ -23,6 +23,11 @@ export interface ExampleRequest {
   output: string
 }
 
+export interface TestCaseRequest {
+  input: string
+  output: string
+}
+
 export interface CreateProblemRequest {
   title: string
   description: string
@@ -37,8 +42,9 @@ export interface CreateProblemRequest {
   interactorCode?: string
   interactorLanguage?: string
   examples?: ExampleRequest[]
+  testcases?: TestCaseRequest[]
   tagIds?: string[]
-  isPublic?: boolean
+  public?: boolean
 }
 
 export interface UpdateProblemRequest {
@@ -55,6 +61,7 @@ export interface UpdateProblemRequest {
   interactorCode?: string
   interactorLanguage?: string
   examples?: ExampleRequest[]
+  testcases?: TestCaseRequest[]
   tagIds?: string[]
-  isPublic?: boolean
+  public?: boolean
 }

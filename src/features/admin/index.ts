@@ -1,5 +1,5 @@
 export { adminProblemApi } from './api/problem-api'
-export type { CreateProblemRequest, UpdateProblemRequest, ExampleRequest } from './api/problem-api'
+export type { CreateProblemRequest, UpdateProblemRequest, ExampleRequest, TestCaseRequest } from './api/problem-api'
 
 export { adminContestApi } from './api/contest-api'
 export type { CreateContestRequest, UpdateContestRequest, ContestProblemRequest } from './api/contest-api'
@@ -18,6 +18,7 @@ export type {
   AdminProblem,
   AdminProblemDetail,
   AdminProblemExample,
+  AdminProblemTestCase,
   AdminProblemTag,
   AdminContest,
   AdminContestDetail,
@@ -30,3 +31,4 @@ export type {
 } from './model/types'
 
 export { ProblemForm, type ProblemFormData } from './ui'
+export { ContestForm, type ContestFormData } from './ui'

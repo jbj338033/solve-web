@@ -11,6 +11,13 @@ export interface AdminProblemExample {
   order: number
 }
 
+export interface AdminProblemTestCase {
+  id: string
+  input: string
+  output: string
+  order: number
+}
+
 export interface AdminProblemTag {
   id: string
   name: string
@@ -38,6 +45,7 @@ export interface AdminProblemDetail extends AdminProblem {
   interactorCode?: string
   interactorLanguage?: string
   examples: AdminProblemExample[]
+  testcases: AdminProblemTestCase[]
   tags: AdminProblemTag[]
 }
 
