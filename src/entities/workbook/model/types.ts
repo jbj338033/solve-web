@@ -1,4 +1,4 @@
-import type { ProblemType } from '@/entities/problem'
+import type { ProblemDifficulty, ProblemType } from '@/entities/problem/model/types'
 
 export interface WorkbookAuthor {
   id: string
@@ -10,7 +10,7 @@ export interface WorkbookAuthor {
 export interface WorkbookProblem {
   id: string
   title: string
-  difficulty: number
+  difficulty: ProblemDifficulty
   type: ProblemType
 }
 

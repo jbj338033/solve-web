@@ -1,3 +1,5 @@
+import type { ProblemDifficulty, ProblemType } from '@/entities/problem'
+
 export interface AdminAuthor {
   id: string
   username: string
@@ -26,9 +28,9 @@ export interface AdminProblemTag {
 export interface AdminProblem {
   id: string
   title: string
-  difficulty: number
+  difficulty: ProblemDifficulty
   author: AdminAuthor
-  type: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
+  type: ProblemType
   createdAt: string
   updatedAt: string
   isPublic: boolean
@@ -52,7 +54,7 @@ export interface AdminProblemDetail extends AdminProblem {
 export interface AdminContestProblem {
   id: string
   title: string
-  difficulty: number
+  difficulty: ProblemDifficulty
   order: number
   score: number
 }
@@ -82,8 +84,8 @@ export interface AdminContestDetail extends AdminContest {
 export interface AdminWorkbookProblem {
   id: string
   title: string
-  difficulty: number
-  type: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
+  difficulty: ProblemDifficulty
+  type: ProblemType
 }
 
 export interface AdminWorkbook {

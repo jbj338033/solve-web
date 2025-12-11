@@ -1,4 +1,5 @@
 import { api, type CursorPage, type CursorParams } from '@/shared/api'
+import type { ProblemDifficulty, ProblemType } from '@/entities/problem'
 import type { AdminProblem, AdminProblemDetail } from '../model/types'
 
 export interface CreateProblemRequest {
@@ -6,10 +7,10 @@ export interface CreateProblemRequest {
   description: string
   inputFormat: string
   outputFormat: string
-  difficulty?: number
+  difficulty?: ProblemDifficulty
   timeLimit?: number
   memoryLimit?: number
-  type?: 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
+  type?: ProblemType
   checkerCode?: string
   checkerLanguage?: string
   interactorCode?: string

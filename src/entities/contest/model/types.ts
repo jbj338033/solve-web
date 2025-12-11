@@ -1,4 +1,5 @@
 import { parseDate } from '@/shared/lib'
+import type { ProblemDifficulty } from '@/entities/problem/model/types'
 
 export interface Contest {
   id: string
@@ -27,7 +28,7 @@ export interface ContestProblem {
   score: number
   id: string
   title: string
-  difficulty: number
+  difficulty: ProblemDifficulty
 }
 
 export type ContestType = 'PUBLIC' | 'PRIVATE'
