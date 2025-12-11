@@ -1,126 +1,45 @@
+import axios from 'axios'
 import { API_URL } from '../config'
+import { useAuthStore } from '@/entities/auth'
 
-interface RequestConfig extends RequestInit {
-  params?: Record<string, string | number | boolean | undefined>
-  skipAuth?: boolean
-}
+const client = axios.create({ baseURL: API_URL })
 
-export class ApiError extends Error {
-  constructor(
-    public code: string,
-    message: string,
-    public status: number
-  ) {
-    super(message)
-    this.name = 'ApiError'
-  }
-}
+client.interceptors.request.use((config) => {
+  const { accessToken } = useAuthStore.getState()
+  if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`
+  return config
+})
 
-type TokenGetter = () => string | null
-type TokenRefresher = () => Promise<string | null>
+client.interceptors.response.use(
+  (res) => res.data,
+  async (error) => {
+    const originalRequest = error.config
 
-class ApiClient {
-  private baseUrl: string
-  private getAccessToken: TokenGetter = () => null
-  private refreshAccessToken: TokenRefresher = async () => null
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+      const { refreshToken, setTokens, logout } = useAuthStore.getState()
 
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl
-  }
-
-  setTokenHandlers(getter: TokenGetter, refresher: TokenRefresher) {
-    this.getAccessToken = getter
-    this.refreshAccessToken = refresher
-  }
-
-  private async request<T>(
-    endpoint: string,
-    config: RequestConfig = {},
-    retry = true
-  ): Promise<T> {
-    const { params, skipAuth, ...init } = config
-
-    let url = `${this.baseUrl}${endpoint}`
-    if (params) {
-      const searchParams = new URLSearchParams()
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined) searchParams.append(key, String(value))
-      })
-      url += `?${searchParams.toString()}`
-    }
-
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...init.headers,
-    }
-
-    if (!skipAuth) {
-      const token = this.getAccessToken()
-      if (token) {
-        ;(headers as Record<string, string>)['Authorization'] = `Bearer ${token}`
+      if (refreshToken) {
+        try {
+          const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken })
+          setTokens(data.accessToken, data.refreshToken)
+          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
+          return client(originalRequest)
+        } catch {
+          logout()
+        }
       }
     }
 
-    const response = await fetch(url, {
-      ...init,
-      headers,
-    })
-
-    if (response.status === 401 && retry && !skipAuth) {
-      const newToken = await this.refreshAccessToken()
-      if (newToken) {
-        return this.request<T>(endpoint, config, false)
-      }
-    }
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        code: 'UNKNOWN',
-        message: response.statusText,
-      }))
-      throw new ApiError(error.code, error.message, response.status)
-    }
-
-    if (response.status === 204) {
-      return undefined as T
-    }
-
-    const text = await response.text()
-    if (!text) return undefined as T
-    return JSON.parse(text)
+    error.message = error.response?.data?.message ?? error.message
+    throw error
   }
+)
 
-  get<T>(endpoint: string, config?: RequestConfig) {
-    return this.request<T>(endpoint, { ...config, method: 'GET' })
-  }
-
-  post<T>(endpoint: string, data?: unknown, config?: RequestConfig) {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    })
-  }
-
-  patch<T>(endpoint: string, data?: unknown, config?: RequestConfig) {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
-    })
-  }
-
-  put<T>(endpoint: string, data?: unknown, config?: RequestConfig) {
-    return this.request<T>(endpoint, {
-      ...config,
-      method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
-    })
-  }
-
-  delete<T>(endpoint: string, config?: RequestConfig) {
-    return this.request<T>(endpoint, { ...config, method: 'DELETE' })
-  }
+export const api = {
+  get: <T>(url: string, config?: object) => client.get<unknown, T>(url, config),
+  post: <T>(url: string, data?: unknown, config?: object) => client.post<unknown, T>(url, data, config),
+  put: <T>(url: string, data?: unknown, config?: object) => client.put<unknown, T>(url, data, config),
+  patch: <T>(url: string, data?: unknown, config?: object) => client.patch<unknown, T>(url, data, config),
+  delete: <T>(url: string, config?: object) => client.delete<unknown, T>(url, config),
 }
-
-export const api = new ApiClient(API_URL)

@@ -9,7 +9,7 @@ export interface LoginResponse {
 
 export const authApi = {
   login: (provider: OAuthProvider, credential: string) =>
-    api.post<LoginResponse>(`/auth/${provider.toLowerCase()}`, { credential }, { skipAuth: true }),
+    api.post<LoginResponse>(`/auth/${provider.toLowerCase()}`, { credential }),
 
   logout: (refreshToken: string) =>
     api.post<void>('/auth/logout', { refreshToken }),
