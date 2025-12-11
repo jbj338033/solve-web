@@ -1,16 +1,13 @@
 // API
-export { api, ApiError } from './api'
-export { getQueryClient, makeQueryClient } from './api'
-export type { CursorPage, CursorParams, Page, PageParams } from './api'
-
-// UI
-export { Skeleton } from './ui'
-export { Resizer } from './ui'
-export { PieChart, DonutChart, RadarChart } from './ui'
-export type { PieChartData, DonutChartData, RadarChartData } from './ui'
+export { api } from './api'
+export type { CursorPage, CursorParams } from './api'
 
 // Lib
-export { cn } from './lib'
+export { cn, getQueryClient, makeQueryClient } from './lib'
+
+// UI
+export { Skeleton, Resizer, PieChart, DonutChart, RadarChart } from './ui'
+export type { PieChartData, DonutChartData, RadarChartData } from './ui'
 
 // Hooks
 export { useResizer } from './hooks'
