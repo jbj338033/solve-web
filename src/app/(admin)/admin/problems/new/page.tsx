@@ -72,7 +72,7 @@ export default function AdminProblemNewPage() {
         examples: examples.length > 0 ? examples : undefined,
         testcases: testcases.length > 0 ? testcases : undefined,
         tagIds: form.tagIds.length > 0 ? form.tagIds : undefined,
-        public: form.isPublic,
+        isPublic: form.isPublic,
       })
       toast.success('문제가 생성되었습니다')
       router.push('/admin/problems')

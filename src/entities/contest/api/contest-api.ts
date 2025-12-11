@@ -72,7 +72,7 @@ export interface CreateContestRequest {
   scoreboardType?: ScoreboardType
   freezeMinutes?: number
   problems?: ContestProblemRequest[]
-  rated?: boolean
+  isRated?: boolean
 }
 
 export interface UpdateContestRequest {

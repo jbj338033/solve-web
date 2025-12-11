@@ -96,7 +96,7 @@ export default function AdminProblemDetailPage({ params }: Props) {
         examples: form.examples.filter((e) => e.input.trim() || e.output.trim()),
         testcases: form.testcases.filter((t) => t.input.trim() || t.output.trim()),
         tagIds: form.tagIds,
-        public: form.isPublic,
+        isPublic: form.isPublic,
       })
       toast.success('저장되었습니다')
     } catch {

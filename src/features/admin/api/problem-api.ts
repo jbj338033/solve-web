@@ -44,7 +44,7 @@ export interface CreateProblemRequest {
   examples?: ExampleRequest[]
   testcases?: TestCaseRequest[]
   tagIds?: string[]
-  public?: boolean
+  isPublic?: boolean
 }
 
 export interface UpdateProblemRequest {
@@ -63,5 +63,5 @@ export interface UpdateProblemRequest {
   examples?: ExampleRequest[]
   testcases?: TestCaseRequest[]
   tagIds?: string[]
-  public?: boolean
+  isPublic?: boolean
 }
