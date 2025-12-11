@@ -1,3 +1,3 @@
-export { useAuthStore, initAuth } from './store'
+export { useAuthStore } from './store'
 export { useAuth, useOAuthCallback } from './hooks'
 export { authApi } from './api'

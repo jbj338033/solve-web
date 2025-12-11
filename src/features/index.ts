@@ -1,7 +1,5 @@
 // Auth
-export { useAuthStore, initAuth } from './auth'
-export { useAuth, useOAuthCallback } from './auth'
-export { authApi } from './auth'
+export { useAuthStore, useAuth, useOAuthCallback, authApi } from './auth'
 
 // Activity Graph
 export { ActivityGraph } from './activity-graph'

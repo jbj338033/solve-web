@@ -7,11 +7,11 @@ import Editor from '@monaco-editor/react'
 import { ArrowLeft, Play, Send, Loader2, Square, X, CheckCircle, XCircle } from 'lucide-react'
 import type { ProblemDetail } from '@/entities/problem'
 import { submissionApi, LANGUAGE_MAP, RESULT_LABELS, type JudgeResult } from '@/entities/submission'
-import { useAuthStore } from '@/features/auth'
 import { ProblemViewer } from '@/widgets/problem-viewer'
 import { useResizer } from '@/shared/hooks'
 import { Resizer } from '@/shared/ui'
 import { cn } from '@/shared/lib'
+import { useAuthStore } from '@/entities/auth'
 
 const LANGUAGES = [
   { value: 'cpp', label: 'C++', cmd: './main' },

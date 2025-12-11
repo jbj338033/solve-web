@@ -3,10 +3,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { OAuthProvider } from '@/entities/user'
-import { useAuthStore } from './store'
+import { useAuthStore } from '@/entities/auth'
 import { authApi } from './api'
 
-// OAuth URLs
 const getOAuthUrl = (provider: OAuthProvider) => {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || ''
   if (provider === 'GOOGLE') {

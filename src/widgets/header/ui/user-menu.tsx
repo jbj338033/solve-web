@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import type { User } from '@/entities/user'
 import { cn } from '@/shared/lib'
-import { useAuth } from '@/features/auth'
+import { useAuthStore } from '@/entities/auth'
 
 interface UserMenuProps {
   user: User
@@ -13,7 +13,7 @@ interface UserMenuProps {
 export function UserMenu({ user }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const { logout } = useAuth()
+  const logout = useAuthStore((s) => s.logout)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

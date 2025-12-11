@@ -8,3 +8,4 @@ export {
   formatRelativeTime,
   formatDateTimeForInput,
 } from './utils'
+export { getQueryClient, makeQueryClient } from './query-client'

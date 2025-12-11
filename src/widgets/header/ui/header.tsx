@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/shared/lib'
-import { useAuth } from '@/features/auth'
+import { useAuthStore } from '@/entities/auth'
 import { UserMenu } from './user-menu'
 
 const navItems = [
@@ -16,7 +16,7 @@ const navItems = [
 
 export function Header() {
   const pathname = usePathname()
-  const { user, isAuthenticated } = useAuth()
+  const { user, accessToken } = useAuthStore()
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
@@ -43,7 +43,7 @@ export function Header() {
           </nav>
         </div>
 
-        {isAuthenticated && user ? (
+        {accessToken && user ? (
           <UserMenu user={user} />
         ) : (
           <Link
