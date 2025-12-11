@@ -28,35 +28,6 @@ export interface ProblemScore {
   frozen?: boolean
 }
 
-export const contestApi = {
-  getContests: (params?: CursorParams) =>
-    api.get<CursorPage<Contest>>('/contests', { params }),
-
-  getContest: (contestId: string) =>
-    api.get<ContestDetail>(`/contests/${contestId}`),
-
-  createContest: (data: CreateContestRequest) =>
-    api.post<ContestDetail>('/contests', data),
-
-  updateContest: (contestId: string, data: UpdateContestRequest) =>
-    api.patch<ContestDetail>(`/contests/${contestId}`, data),
-
-  deleteContest: (contestId: string) =>
-    api.delete<void>(`/contests/${contestId}`),
-
-  getContestProblems: (contestId: string) =>
-    api.get<ContestProblem[]>(`/contests/${contestId}/problems`),
-
-  getScoreboard: (contestId: string) =>
-    api.get<ScoreboardResponse>(`/contests/${contestId}/scoreboard`),
-
-  joinContest: (contestId: string, inviteCode?: string) =>
-    api.post<void>(`/contests/${contestId}/join`, { inviteCode }),
-
-  leaveContest: (contestId: string) =>
-    api.post<void>(`/contests/${contestId}/leave`),
-}
-
 export interface ContestProblemRequest {
   problemId: string
   score?: number
@@ -85,4 +56,33 @@ export interface UpdateContestRequest {
   scoreboardType?: ScoreboardType
   freezeMinutes?: number
   problems?: ContestProblemRequest[]
+}
+
+export const contestApi = {
+  getContests: (params?: CursorParams) =>
+    api.get<CursorPage<Contest>>('/contests', { params }),
+
+  getContest: (contestId: string) =>
+    api.get<ContestDetail>(`/contests/${contestId}`),
+
+  createContest: (data: CreateContestRequest) =>
+    api.post<ContestDetail>('/contests', data),
+
+  updateContest: (contestId: string, data: UpdateContestRequest) =>
+    api.patch<ContestDetail>(`/contests/${contestId}`, data),
+
+  deleteContest: (contestId: string) =>
+    api.delete<void>(`/contests/${contestId}`),
+
+  getContestProblems: (contestId: string) =>
+    api.get<ContestProblem[]>(`/contests/${contestId}/problems`),
+
+  getScoreboard: (contestId: string) =>
+    api.get<ScoreboardResponse>(`/contests/${contestId}/scoreboard`),
+
+  joinContest: (contestId: string, inviteCode?: string) =>
+    api.post<void>(`/contests/${contestId}/join`, { inviteCode }),
+
+  leaveContest: (contestId: string) =>
+    api.post<void>(`/contests/${contestId}/leave`),
 }
