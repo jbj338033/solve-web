@@ -81,7 +81,7 @@ class ApiClient {
       throw new ApiError(error.code, error.message, response.status)
     }
 
-    if (response.status === 204) {
+    if (response.status === 201 || response.status === 204) {
       return undefined as T
     }
 
