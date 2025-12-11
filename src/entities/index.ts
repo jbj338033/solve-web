@@ -6,8 +6,8 @@ export { fileApi, type FileType } from './file'
 
 // Problem
 export { problemApi } from './problem'
-export type { CreateProblemRequest, UpdateProblemRequest } from './problem'
-export type { Problem, ProblemDetail, ProblemExample, ProblemType } from './problem'
+export type { ProblemFilterParams, CreateProblemRequest, UpdateProblemRequest } from './problem'
+export type { Problem, ProblemDetail, ProblemExample, ProblemType, ProblemDifficulty, ProblemSort } from './problem'
 export { ProblemItem, ProblemItemSkeleton } from './problem'
 
 // User
