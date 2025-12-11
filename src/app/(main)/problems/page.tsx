@@ -1,289 +1,47 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { Search, Loader2, ChevronDown, X } from 'lucide-react'
-import { problemApi, type Problem, type ProblemDifficulty, type ProblemSort } from '@/entities/problem'
-import { tagApi, type Tag } from '@/entities/tag'
-import { DifficultyBadge } from '@/shared/ui'
-import { cn } from '@/shared/lib'
-
-const DIFFICULTY_TIERS = ['MOON', 'STAR', 'COMET', 'PLANET', 'NEBULA', 'GALAXY'] as const
-const SORT_OPTIONS: { value: ProblemSort; label: string }[] = [
-  { value: 'LATEST', label: '최신순' },
-  { value: 'DIFFICULTY_ASC', label: '난이도 낮은순' },
-  { value: 'DIFFICULTY_DESC', label: '난이도 높은순' },
-]
+import { Suspense } from 'react'
+import { ProblemsContent } from './content'
 
 export default function ProblemsPage() {
-  const router = useRouter()
+  return (
+    <Suspense fallback={<ProblemsLoading />}>
+      <ProblemsContent />
+    </Suspense>
+  )
+}
 
-  const [problems, setProblems] = useState<Problem[]>([])
-  const [tags, setTags] = useState<Tag[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [hasNext, setHasNext] = useState(false)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-
-  const [query, setQuery] = useState('')
-  const [selectedDifficulties, setSelectedDifficulties] = useState<ProblemDifficulty[]>([])
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [sort, setSort] = useState<ProblemSort>('LATEST')
-  const [showFilters, setShowFilters] = useState(false)
-
-  const loadProblems = useCallback(async (cursor?: string) => {
-    try {
-      const res = await problemApi.getProblems({
-        cursor,
-        limit: 20,
-        query: query || undefined,
-        difficulties: selectedDifficulties.length > 0 ? selectedDifficulties : undefined,
-        tagIds: selectedTags.length > 0 ? selectedTags : undefined,
-        sort,
-      })
-      if (cursor) {
-        setProblems((prev) => [...prev, ...res.content])
-      } else {
-        setProblems(res.content)
-      }
-      setHasNext(res.hasNext)
-    } catch {
-      // ignore
-    }
-  }, [query, selectedDifficulties, selectedTags, sort])
-
-  useEffect(() => {
-    tagApi.getAll().then(setTags).catch(() => {})
-  }, [])
-
-  useEffect(() => {
-    setIsLoading(true)
-    loadProblems().finally(() => setIsLoading(false))
-  }, [loadProblems])
-
-  const loadMore = async () => {
-    if (!hasNext || isLoadingMore || problems.length === 0) return
-    setIsLoadingMore(true)
-    await loadProblems(problems[problems.length - 1].id)
-    setIsLoadingMore(false)
-  }
-
-  const toggleDifficulty = (tier: string) => {
-    const tierDifficulties = [5, 4, 3, 2, 1].map((n) => `${tier}_${n}` as ProblemDifficulty)
-    const allSelected = tierDifficulties.every((d) => selectedDifficulties.includes(d))
-
-    if (allSelected) {
-      setSelectedDifficulties((prev) => prev.filter((d) => !tierDifficulties.includes(d)))
-    } else {
-      setSelectedDifficulties((prev) => [...prev.filter((d) => !tierDifficulties.includes(d)), ...tierDifficulties])
-    }
-  }
-
-  const toggleTag = (tagId: string) => {
-    setSelectedTags((prev) => (prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]))
-  }
-
-  const clearFilters = () => {
-    setQuery('')
-    setSelectedDifficulties([])
-    setSelectedTags([])
-    setSort('LATEST')
-  }
-
-  const hasActiveFilters = query || selectedDifficulties.length > 0 || selectedTags.length > 0 || sort !== 'LATEST'
-
+function ProblemsLoading() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-semibold">문제</h1>
+      <div className="flex items-center justify-between gap-4">
+        <div className="h-7 w-16 animate-pulse rounded bg-muted" />
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="검색"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="h-9 w-48 rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
-            />
-          </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={cn(
-              'flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
-              showFilters || hasActiveFilters
-                ? 'border-primary bg-primary/5 text-primary'
-                : 'border-border text-muted-foreground hover:bg-muted/50'
-            )}
-          >
-            필터
-            <ChevronDown className={cn('size-4 transition-transform', showFilters && 'rotate-180')} />
-          </button>
+          <div className="h-9 w-48 animate-pulse rounded-lg bg-muted" />
+          <div className="h-9 w-20 animate-pulse rounded-lg bg-muted" />
         </div>
       </div>
-
-      {showFilters && (
-        <div className="mt-4 space-y-4 rounded-lg border border-border bg-muted/20 p-4">
-          <div>
-            <div className="mb-2 text-sm font-medium">난이도</div>
-            <div className="flex flex-wrap gap-2">
-              {DIFFICULTY_TIERS.map((tier) => {
-                const tierDifficulties = [5, 4, 3, 2, 1].map((n) => `${tier}_${n}` as ProblemDifficulty)
-                const selectedCount = tierDifficulties.filter((d) => selectedDifficulties.includes(d)).length
-                const isSelected = selectedCount > 0
-
-                return (
-                  <button
-                    key={tier}
-                    onClick={() => toggleDifficulty(tier)}
-                    className={cn(
-                      'rounded-full border px-3 py-1 text-sm transition-colors',
-                      isSelected
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border text-muted-foreground hover:border-primary/50'
-                    )}
-                  >
-                    {tier.charAt(0) + tier.slice(1).toLowerCase()}
-                    {selectedCount > 0 && selectedCount < 5 && ` (${selectedCount})`}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {tags.length > 0 && (
-            <div>
-              <div className="mb-2 text-sm font-medium">태그</div>
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <button
-                    key={tag.id}
-                    onClick={() => toggleTag(tag.id)}
-                    className={cn(
-                      'rounded-full border px-3 py-1 text-sm transition-colors',
-                      selectedTags.includes(tag.id)
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border text-muted-foreground hover:border-primary/50'
-                    )}
-                  >
-                    {tag.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between border-t border-border pt-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">정렬:</span>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as ProblemSort)}
-                className="h-8 rounded-lg border border-border bg-background px-2 text-sm outline-none focus:border-primary"
-              >
-                {SORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <X className="size-3.5" />
-                필터 초기화
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="mt-6">
-        {isLoading ? (
-          <div className="overflow-hidden rounded-lg border border-border">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">제목</th>
-                  <th className="w-28 whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-muted-foreground">난이도</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...Array(10)].map((_, i) => (
-                  <tr key={i} className="border-b border-border last:border-0">
-                    <td className="px-4 py-3.5">
-                      <div className="h-4 w-48 animate-pulse rounded bg-muted" />
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="h-5 w-16 animate-pulse rounded bg-muted" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : problems.length > 0 ? (
-          <>
-            <div className="overflow-hidden rounded-lg border border-border">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">제목</th>
-                    <th className="w-28 whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-muted-foreground">난이도</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {problems.map((problem) => (
-                    <tr
-                      key={problem.id}
-                      onClick={() => router.push(`/problems/${problem.id}`)}
-                      className="cursor-pointer border-b border-border last:border-0 hover:bg-muted/50"
-                    >
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">{problem.title}</span>
-                          {problem.type !== 'STANDARD' && (
-                            <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">
-                              {problem.type === 'SPECIAL_JUDGE' ? '스페셜 저지' : '인터랙티브'}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3.5">
-                        <DifficultyBadge difficulty={problem.difficulty} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {hasNext && (
-              <div className="mt-6 text-center">
-                <button
-                  onClick={loadMore}
-                  disabled={isLoadingMore}
-                  className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted/50 disabled:opacity-50"
-                >
-                  {isLoadingMore ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      로딩중...
-                    </>
-                  ) : (
-                    '더보기'
-                  )}
-                </button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="rounded-lg border border-dashed border-border py-16 text-center text-sm text-muted-foreground">
-            {hasActiveFilters ? '검색 결과가 없습니다' : '문제가 없습니다'}
-          </div>
-        )}
+      <div className="mt-6 overflow-hidden rounded-lg border border-border">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border bg-muted/50">
+              <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">제목</th>
+              <th className="w-28 px-4 py-3 text-left text-sm font-medium text-muted-foreground">난이도</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...Array(10)].map((_, i) => (
+              <tr key={i} className="border-b border-border last:border-0">
+                <td className="px-4 py-3.5">
+                  <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+                </td>
+                <td className="px-4 py-3.5">
+                  <div className="h-5 w-16 animate-pulse rounded bg-muted" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
