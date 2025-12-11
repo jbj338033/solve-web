@@ -6,4 +6,5 @@ export {
   formatDate,
   formatDuration,
   formatRelativeTime,
+  formatDateTimeForInput,
 } from './utils'

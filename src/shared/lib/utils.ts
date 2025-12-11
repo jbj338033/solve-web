@@ -42,3 +42,7 @@ export function formatRelativeTime(dateStr: string): string {
   const timeStr = hours > 0 ? `${hours}시간 ${minutes}분` : `${minutes}분`
   return diff > 0 ? `${timeStr} 남음` : `${timeStr} 전`
 }
+
+export function formatDateTimeForInput(dateStr: string): string {
+  return parseDate(dateStr).format('YYYY-MM-DDTHH:mm')
+}
