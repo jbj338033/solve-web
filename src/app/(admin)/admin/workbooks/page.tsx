@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { type ColumnDef } from '@tanstack/react-table'
 import toast from 'react-hot-toast'
-import { Plus, Loader2, Trash2, Pencil } from 'lucide-react'
+import { Plus, Trash2, Pencil } from 'lucide-react'
 import { adminWorkbookApi, type AdminWorkbook } from '@/features/admin'
+import { DataTable } from '@/shared/ui'
 import { formatDateTime } from '@/shared/lib'
 
 export default function AdminWorkbooksPage() {
@@ -43,7 +45,8 @@ export default function AdminWorkbooksPage() {
     }
   }
 
-  const handleDelete = async (workbookId: number) => {
+  const handleDelete = async (e: React.MouseEvent, workbookId: number) => {
+    e.stopPropagation()
     if (!confirm('정말 삭제하시겠습니까?')) return
     try {
       await adminWorkbookApi.deleteWorkbook(workbookId)
@@ -54,13 +57,62 @@ export default function AdminWorkbooksPage() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
+  const columns = useMemo<ColumnDef<AdminWorkbook>[]>(
+    () => [
+      {
+        accessorKey: 'title',
+        header: '제목',
+        cell: ({ row }) => (
+          <span className="text-sm hover:underline">{row.original.title}</span>
+        ),
+      },
+      {
+        accessorKey: 'author',
+        header: '작성자',
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {row.original.author.displayName}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'createdAt',
+        header: '생성일',
+        size: 160,
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {formatDateTime(row.original.createdAt)}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="block text-right">작업</span>,
+        size: 96,
+        meta: { className: 'text-right' },
+        cell: ({ row }) => (
+          <div className="flex items-center justify-end gap-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push(`/admin/workbooks/${row.original.id}`)
+              }}
+              className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <Pencil className="size-4" />
+            </button>
+            <button
+              onClick={(e) => handleDelete(e, row.original.id)}
+              className="rounded p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-600"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [router]
+  )
 
   return (
     <div className="p-6">
@@ -75,78 +127,16 @@ export default function AdminWorkbooksPage() {
         </Link>
       </div>
 
-      {workbooks.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border py-16 text-center text-sm text-muted-foreground">
-          등록된 문제집이 없습니다
-        </div>
-      ) : (
-        <>
-          <div className="overflow-hidden rounded-lg border border-border">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">제목</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">작성자</th>
-                  <th className="w-40 px-4 py-3 text-left text-sm font-medium text-muted-foreground">생성일</th>
-                  <th className="w-24 px-4 py-3 text-right text-sm font-medium text-muted-foreground">작업</th>
-                </tr>
-              </thead>
-              <tbody>
-                {workbooks.map((workbook) => (
-                  <tr
-                    key={workbook.id}
-                    className="border-b border-border last:border-0 hover:bg-muted/30"
-                  >
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => router.push(`/admin/workbooks/${workbook.id}`)}
-                        className="text-sm hover:underline"
-                      >
-                        {workbook.title}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {workbook.author.displayName}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {formatDateTime(workbook.createdAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => router.push(`/admin/workbooks/${workbook.id}`)}
-                          className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                        >
-                          <Pencil className="size-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(workbook.id)}
-                          className="rounded p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-600"
-                        >
-                          <Trash2 className="size-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {hasNext && (
-            <div className="mt-4 flex justify-center">
-              <button
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-                className="flex h-9 items-center gap-2 rounded-lg border border-border px-4 text-sm hover:bg-muted disabled:opacity-50"
-              >
-                {isLoadingMore && <Loader2 className="size-4 animate-spin" />}
-                더 보기
-              </button>
-            </div>
-          )}
-        </>
-      )}
+      <DataTable
+        columns={columns}
+        data={workbooks}
+        isLoading={isLoading}
+        emptyMessage="등록된 문제집이 없습니다"
+        onRowClick={(row) => router.push(`/admin/workbooks/${row.id}`)}
+        hasNext={hasNext}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={handleLoadMore}
+      />
     </div>
   )
 }
