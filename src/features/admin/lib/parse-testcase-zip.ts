@@ -21,7 +21,11 @@ export async function parseTestcaseZip(file: File): Promise<ParseResult | ParseE
     const unzipped = unzipSync(new Uint8Array(buffer))
 
     const files = Object.entries(unzipped)
-      .filter(([name]) => !name.startsWith('__MACOSX') && !name.startsWith('.'))
+      .filter(([name]) => {
+        if (name.startsWith('__MACOSX') || name.startsWith('.')) return false
+        if (name.endsWith('/')) return false
+        return true
+      })
       .map(([name, data]) => ({
         name: name.split('/').pop() || name,
         content: new TextDecoder().decode(data),
@@ -55,10 +59,10 @@ export async function parseTestcaseZip(file: File): Promise<ParseResult | ParseE
       const input = inputFiles.get(index)
       const output = outputFiles.get(index)
 
-      if (!input) {
+      if (input === undefined) {
         return { success: false, error: `${index}.in 파일이 없습니다` }
       }
-      if (!output) {
+      if (output === undefined) {
         return { success: false, error: `${index}.out 파일이 없습니다` }
       }
 
