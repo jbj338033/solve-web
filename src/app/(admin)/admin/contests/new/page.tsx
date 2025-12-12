@@ -3,53 +3,42 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useForm, FormProvider } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Loader2, Save } from 'lucide-react'
-import { adminContestApi, ContestForm, type ContestFormData } from '@/features/admin'
-
-const initialForm: ContestFormData = {
-  title: '',
-  description: '',
-  startAt: '',
-  endAt: '',
-  type: 'PUBLIC',
-  scoringType: 'IOI',
-  scoreboardType: 'REALTIME',
-  freezeMinutes: 60,
-  problems: [],
-  isRated: false,
-}
+import { adminContestApi, ContestForm } from '@/features/admin'
+import {
+  contestFormSchema,
+  contestFormDefaultValues,
+  type ContestFormData,
+} from '@/shared/lib'
 
 export default function AdminContestNewPage() {
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
-  const [form, setForm] = useState<ContestFormData>(initialForm)
 
-  const handleSave = async () => {
-    if (!form.title.trim()) {
-      toast.error('제목을 입력해주세요')
-      return
-    }
-    if (!form.startAt || !form.endAt) {
-      toast.error('시작/종료 시간을 입력해주세요')
-      return
-    }
+  const methods = useForm<ContestFormData>({
+    resolver: zodResolver(contestFormSchema),
+    defaultValues: contestFormDefaultValues,
+  })
 
+  const onSubmit = async (data: ContestFormData) => {
     setIsSaving(true)
     try {
       await adminContestApi.createContest({
-        title: form.title,
-        description: form.description || undefined,
-        startAt: new Date(form.startAt).toISOString(),
-        endAt: new Date(form.endAt).toISOString(),
-        type: form.type,
-        scoringType: form.scoringType,
-        scoreboardType: form.scoreboardType,
-        freezeMinutes: form.scoreboardType === 'FREEZE' ? form.freezeMinutes : undefined,
-        problems: form.problems.length > 0
-          ? form.problems.map((p) => ({ problemId: p.problemId, score: p.score }))
+        title: data.title,
+        description: data.description || undefined,
+        startAt: new Date(data.startAt).toISOString(),
+        endAt: new Date(data.endAt).toISOString(),
+        type: data.type,
+        scoringType: data.scoringType,
+        scoreboardType: data.scoreboardType,
+        freezeMinutes: data.scoreboardType === 'FREEZE' ? data.freezeMinutes : undefined,
+        problems: data.problems.length > 0
+          ? data.problems.map((p) => ({ problemId: p.problemId, score: p.score }))
           : undefined,
-        isRated: form.isRated,
+        isRated: data.isRated,
       })
       toast.success('대회가 생성되었습니다')
       router.push('/admin/contests')
@@ -58,6 +47,15 @@ export default function AdminContestNewPage() {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleSave = () => {
+    methods.handleSubmit(onSubmit, (errors) => {
+      const firstError = Object.values(errors)[0]
+      if (firstError?.message) {
+        toast.error(firstError.message as string)
+      }
+    })()
   }
 
   return (
@@ -79,7 +77,9 @@ export default function AdminContestNewPage() {
         </button>
       </div>
 
-      <ContestForm form={form} onChange={setForm} />
+      <FormProvider {...methods}>
+        <ContestForm />
+      </FormProvider>
     </div>
   )
 }

@@ -30,5 +30,5 @@ export type {
   AdminBanner,
 } from './model/types'
 
-export { ProblemForm, type ProblemFormData } from './ui'
-export { ContestForm, type ContestFormData } from './ui'
+export { ProblemForm } from './ui'
+export { ContestForm } from './ui'

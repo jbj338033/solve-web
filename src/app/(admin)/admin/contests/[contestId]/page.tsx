@@ -3,15 +3,21 @@
 import { use, useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useForm, FormProvider } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Loader2, Save } from 'lucide-react'
 import {
   adminContestApi,
   ContestForm,
-  type ContestFormData,
   type AdminContestDetail,
 } from '@/features/admin'
-import { formatDateTimeForInput } from '@/shared/lib'
+import {
+  formatDateTimeForInput,
+  contestFormSchema,
+  contestFormDefaultValues,
+  type ContestFormData,
+} from '@/shared/lib'
 
 interface Props {
   params: Promise<{ contestId: string }>
@@ -24,24 +30,17 @@ export default function AdminContestDetailPage({ params }: Props) {
   const [contest, setContest] = useState<AdminContestDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [form, setForm] = useState<ContestFormData>({
-    title: '',
-    description: '',
-    startAt: '',
-    endAt: '',
-    type: 'PUBLIC',
-    scoringType: 'IOI',
-    scoreboardType: 'REALTIME',
-    freezeMinutes: 60,
-    problems: [],
-    isRated: false,
+
+  const methods = useForm<ContestFormData>({
+    resolver: zodResolver(contestFormSchema),
+    defaultValues: contestFormDefaultValues,
   })
 
   const loadData = useCallback(async () => {
     try {
       const data = await adminContestApi.getContest(contestId)
       setContest(data)
-      setForm({
+      methods.reset({
         title: data.title,
         description: data.description || '',
         startAt: formatDateTimeForInput(data.startAt),
@@ -63,34 +62,25 @@ export default function AdminContestDetailPage({ params }: Props) {
     } finally {
       setIsLoading(false)
     }
-  }, [contestId, router])
+  }, [contestId, router, methods])
 
   useEffect(() => {
     loadData()
   }, [loadData])
 
-  const handleSave = async () => {
-    if (!form.title.trim()) {
-      toast.error('제목을 입력해주세요')
-      return
-    }
-    if (!form.startAt || !form.endAt) {
-      toast.error('시작/종료 시간을 입력해주세요')
-      return
-    }
-
+  const onSubmit = async (data: ContestFormData) => {
     setIsSaving(true)
     try {
       await adminContestApi.updateContest(contestId, {
-        title: form.title,
-        description: form.description || undefined,
-        startAt: new Date(form.startAt).toISOString(),
-        endAt: new Date(form.endAt).toISOString(),
-        type: form.type,
-        scoringType: form.scoringType,
-        scoreboardType: form.scoreboardType,
-        freezeMinutes: form.scoreboardType === 'FREEZE' ? form.freezeMinutes : undefined,
-        problems: form.problems.map((p) => ({ problemId: p.problemId, score: p.score })),
+        title: data.title,
+        description: data.description || undefined,
+        startAt: new Date(data.startAt).toISOString(),
+        endAt: new Date(data.endAt).toISOString(),
+        type: data.type,
+        scoringType: data.scoringType,
+        scoreboardType: data.scoreboardType,
+        freezeMinutes: data.scoreboardType === 'FREEZE' ? data.freezeMinutes : undefined,
+        problems: data.problems.map((p) => ({ problemId: p.problemId, score: p.score })),
       })
       toast.success('저장되었습니다')
     } catch {
@@ -98,6 +88,15 @@ export default function AdminContestDetailPage({ params }: Props) {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleSave = () => {
+    methods.handleSubmit(onSubmit, (errors) => {
+      const firstError = Object.values(errors)[0]
+      if (firstError?.message) {
+        toast.error(firstError.message as string)
+      }
+    })()
   }
 
   if (isLoading) {
@@ -129,7 +128,9 @@ export default function AdminContestDetailPage({ params }: Props) {
         </button>
       </div>
 
-      <ContestForm form={form} onChange={setForm} />
+      <FormProvider {...methods}>
+        <ContestForm />
+      </FormProvider>
     </div>
   )
 }

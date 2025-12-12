@@ -1,38 +1,26 @@
 'use client'
 
 import { useState } from 'react'
+import { useFormContext, useFieldArray, Controller } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { Plus, Trash2, Search, Loader2, Calendar, Trophy, Eye, EyeOff } from 'lucide-react'
+import { Plus, Trash2, Search, Loader2, Calendar, Trophy } from 'lucide-react'
 import { FormSection } from '@/shared/ui'
-import { cn } from '@/shared/lib'
+import { cn, type ContestFormData } from '@/shared/lib'
 import { adminProblemApi, type AdminProblem } from '@/features/admin'
 
-export interface ContestFormData {
-  title: string
-  description: string
-  startAt: string
-  endAt: string
-  type: 'PUBLIC' | 'PRIVATE'
-  scoringType: 'IOI' | 'ICPC'
-  scoreboardType: 'REALTIME' | 'FREEZE' | 'AFTER_CONTEST'
-  freezeMinutes: number
-  problems: { problemId: number; title: string; score: number }[]
-  isRated: boolean
-}
+export function ContestForm() {
+  const { register, control, watch, setValue } = useFormContext<ContestFormData>()
+  const { fields, append, remove, update } = useFieldArray({
+    control,
+    name: 'problems',
+  })
 
-interface Props {
-  form: ContestFormData
-  onChange: (form: ContestFormData) => void
-}
-
-export function ContestForm({ form, onChange }: Props) {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<AdminProblem[]>([])
   const [isSearching, setIsSearching] = useState(false)
 
-  const updateField = <K extends keyof ContestFormData>(key: K, value: ContestFormData[K]) => {
-    onChange({ ...form, [key]: value })
-  }
+  const scoreboardType = watch('scoreboardType')
+  const isRated = watch('isRated')
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
@@ -42,7 +30,7 @@ export function ContestForm({ form, onChange }: Props) {
       const filtered = res.content.filter(
         (p) =>
           p.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !form.problems.some((fp) => fp.problemId === p.id)
+          !fields.some((fp) => fp.problemId === p.id)
       )
       setSearchResults(filtered)
     } catch {
@@ -53,26 +41,14 @@ export function ContestForm({ form, onChange }: Props) {
   }
 
   const addProblem = (problem: AdminProblem) => {
-    updateField('problems', [
-      ...form.problems,
-      { problemId: problem.id, title: problem.title, score: 100 },
-    ])
+    append({ problemId: problem.id, title: problem.title, score: 100 })
     setSearchResults((prev) => prev.filter((p) => p.id !== problem.id))
     setSearchQuery('')
   }
 
-  const removeProblem = (problemId: number) => {
-    updateField(
-      'problems',
-      form.problems.filter((p) => p.problemId !== problemId)
-    )
-  }
-
-  const updateProblemScore = (problemId: number, score: number) => {
-    updateField(
-      'problems',
-      form.problems.map((p) => (p.problemId === problemId ? { ...p, score } : p))
-    )
+  const updateProblemScore = (index: number, score: number) => {
+    const field = fields[index]
+    update(index, { ...field, score })
   }
 
   return (
@@ -83,8 +59,7 @@ export function ContestForm({ form, onChange }: Props) {
             <label className="mb-1.5 block text-sm font-medium">제목</label>
             <input
               type="text"
-              value={form.title}
-              onChange={(e) => updateField('title', e.target.value)}
+              {...register('title')}
               placeholder="대회 제목을 입력하세요"
               className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
             />
@@ -93,8 +68,7 @@ export function ContestForm({ form, onChange }: Props) {
           <div>
             <label className="mb-1.5 block text-sm font-medium">설명</label>
             <textarea
-              value={form.description}
-              onChange={(e) => updateField('description', e.target.value)}
+              {...register('description')}
               placeholder="대회에 대한 설명을 작성하세요"
               rows={4}
               className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
@@ -109,8 +83,7 @@ export function ContestForm({ form, onChange }: Props) {
               </label>
               <input
                 type="datetime-local"
-                value={form.startAt}
-                onChange={(e) => updateField('startAt', e.target.value)}
+                {...register('startAt')}
                 className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
               />
             </div>
@@ -121,37 +94,42 @@ export function ContestForm({ form, onChange }: Props) {
               </label>
               <input
                 type="datetime-local"
-                value={form.endAt}
-                onChange={(e) => updateField('endAt', e.target.value)}
+                {...register('endAt')}
                 className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
-            <button
-              type="button"
-              onClick={() => updateField('isRated', !form.isRated)}
-              className={cn(
-                'relative h-6 w-11 rounded-full transition-colors',
-                form.isRated ? 'bg-primary' : 'bg-muted-foreground/30'
-              )}
-            >
-              <span
-                className={cn(
-                  'absolute top-1 size-4 rounded-full bg-white transition-all',
-                  form.isRated ? 'left-6' : 'left-1'
-                )}
-              />
-            </button>
-            <div className="flex items-center gap-2">
-              <Trophy className={cn('size-4', form.isRated ? 'text-primary' : 'text-muted-foreground')} />
-              <span className="text-sm font-medium">{form.isRated ? '레이팅 반영' : '레이팅 미반영'}</span>
-            </div>
-            <span className="text-sm text-muted-foreground">
-              {form.isRated ? '대회 결과가 참가자의 레이팅에 반영됩니다' : '대회 결과가 레이팅에 반영되지 않습니다'}
-            </span>
-          </div>
+          <Controller
+            control={control}
+            name="isRated"
+            render={({ field }) => (
+              <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
+                <button
+                  type="button"
+                  onClick={() => field.onChange(!field.value)}
+                  className={cn(
+                    'relative h-6 w-11 rounded-full transition-colors',
+                    field.value ? 'bg-primary' : 'bg-muted-foreground/30'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-1 size-4 rounded-full bg-white transition-all',
+                      field.value ? 'left-6' : 'left-1'
+                    )}
+                  />
+                </button>
+                <div className="flex items-center gap-2">
+                  <Trophy className={cn('size-4', field.value ? 'text-primary' : 'text-muted-foreground')} />
+                  <span className="text-sm font-medium">{field.value ? '레이팅 반영' : '레이팅 미반영'}</span>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {field.value ? '대회 결과가 참가자의 레이팅에 반영됩니다' : '대회 결과가 레이팅에 반영되지 않습니다'}
+                </span>
+              </div>
+            )}
+          />
         </div>
       </FormSection>
 
@@ -161,8 +139,7 @@ export function ContestForm({ form, onChange }: Props) {
             <div>
               <label className="mb-1.5 block text-sm font-medium">공개 유형</label>
               <select
-                value={form.type}
-                onChange={(e) => updateField('type', e.target.value as ContestFormData['type'])}
+                {...register('type')}
                 className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
               >
                 <option value="PUBLIC">공개</option>
@@ -172,8 +149,7 @@ export function ContestForm({ form, onChange }: Props) {
             <div>
               <label className="mb-1.5 block text-sm font-medium">채점 방식</label>
               <select
-                value={form.scoringType}
-                onChange={(e) => updateField('scoringType', e.target.value as ContestFormData['scoringType'])}
+                {...register('scoringType')}
                 className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
               >
                 <option value="IOI">IOI (부분 점수)</option>
@@ -183,8 +159,7 @@ export function ContestForm({ form, onChange }: Props) {
             <div>
               <label className="mb-1.5 block text-sm font-medium">스코어보드</label>
               <select
-                value={form.scoreboardType}
-                onChange={(e) => updateField('scoreboardType', e.target.value as ContestFormData['scoreboardType'])}
+                {...register('scoreboardType')}
                 className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
               >
                 <option value="REALTIME">실시간</option>
@@ -194,15 +169,14 @@ export function ContestForm({ form, onChange }: Props) {
             </div>
           </div>
 
-          {form.scoreboardType === 'FREEZE' && (
+          {scoreboardType === 'FREEZE' && (
             <div>
               <label className="mb-1.5 block text-sm font-medium">프리즈 시간</label>
               <div className="relative w-40">
                 <input
                   type="number"
                   min={1}
-                  value={form.freezeMinutes}
-                  onChange={(e) => updateField('freezeMinutes', Number(e.target.value))}
+                  {...register('freezeMinutes', { valueAsNumber: true })}
                   className="h-10 w-full rounded-lg border border-border bg-background px-3 pr-12 text-sm outline-none focus:border-primary"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -255,27 +229,27 @@ export function ContestForm({ form, onChange }: Props) {
             </div>
           )}
 
-          {form.problems.length === 0 ? (
+          {fields.length === 0 ? (
             <div className="rounded-lg border-2 border-dashed border-border py-8 text-center text-sm text-muted-foreground">
               아직 추가된 문제가 없습니다
             </div>
           ) : (
             <div className="space-y-2">
-              {form.problems.map((problem, index) => (
+              {fields.map((field, index) => (
                 <div
-                  key={problem.problemId}
+                  key={field.id}
                   className="flex items-center gap-3 rounded-lg border border-border bg-muted/20 px-4 py-3"
                 >
                   <span className="flex size-7 shrink-0 items-center justify-center rounded bg-primary/10 text-sm font-medium text-primary">
                     {String.fromCharCode(65 + index)}
                   </span>
-                  <span className="flex-1 text-sm">{problem.title}</span>
+                  <span className="flex-1 text-sm">{field.title}</span>
                   <div className="relative w-24">
                     <input
                       type="number"
                       min={0}
-                      value={problem.score}
-                      onChange={(e) => updateProblemScore(problem.problemId, Number(e.target.value))}
+                      value={field.score}
+                      onChange={(e) => updateProblemScore(index, Number(e.target.value))}
                       className="h-8 w-full rounded border border-border bg-background px-2 pr-8 text-center text-sm outline-none focus:border-primary"
                     />
                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -284,7 +258,7 @@ export function ContestForm({ form, onChange }: Props) {
                   </div>
                   <button
                     type="button"
-                    onClick={() => removeProblem(problem.problemId)}
+                    onClick={() => remove(index)}
                     className="text-muted-foreground hover:text-red-500"
                   >
                     <Trash2 className="size-4" />
