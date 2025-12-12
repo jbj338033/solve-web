@@ -5,6 +5,8 @@ import { Plus, Trash2, Clock, HardDrive, Eye, EyeOff } from 'lucide-react'
 import { FormSection, MarkdownEditor } from '@/shared/ui'
 import { cn, type ProblemFormData } from '@/shared/lib'
 import type { ProblemDifficulty, ProblemType } from '@/entities/problem'
+import { TestcaseUpload } from './testcase-upload'
+import type { ParsedTestCase } from '../lib'
 
 const DIFFICULTIES: { value: ProblemDifficulty; label: string }[] = [
   { value: 'UNRATED', label: 'Unrated' },
@@ -62,6 +64,7 @@ export function ProblemForm({ tags }: Props) {
     fields: testcaseFields,
     append: appendTestcase,
     remove: removeTestcase,
+    replace: replaceTestcases,
   } = useFieldArray({ control, name: 'testcases' })
 
   const isPublic = watch('isPublic')
@@ -74,6 +77,10 @@ export function ProblemForm({ tags }: Props) {
     } else {
       setValue('tagIds', [...current, tagId])
     }
+  }
+
+  const handleTestcaseUpload = (testcases: ParsedTestCase[]) => {
+    replaceTestcases(testcases)
   }
 
   return (
@@ -286,6 +293,18 @@ export function ProblemForm({ tags }: Props) {
 
       <FormSection title="테스트케이스" description="채점에 사용되는 테스트케이스입니다">
         <div className="space-y-4">
+          <TestcaseUpload onUpload={handleTestcaseUpload} />
+
+          {testcaseFields.length > 0 && (
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">
+                {testcaseFields.length}개의 테스트케이스
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+          )}
+
           {testcaseFields.map((field, index) => (
             <div key={field.id} className="relative rounded-lg border border-border bg-muted/20 p-4">
               <div className="mb-3 flex items-center justify-between">
