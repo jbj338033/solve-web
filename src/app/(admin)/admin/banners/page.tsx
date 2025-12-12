@@ -2,20 +2,36 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { Plus, Loader2, Trash2, Pencil, X, Check, Upload, ImageIcon } from 'lucide-react'
 import { adminBannerApi, type AdminBanner } from '@/features/admin'
 import { fileApi } from '@/entities/file'
+import { bannerFormSchema, bannerFormDefaultValues, type BannerFormData } from '@/shared/lib'
 
 export default function AdminBannersPage() {
   const [banners, setBanners] = useState<AdminBanner[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({ name: '', description: '', imageUrl: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<BannerFormData>({
+    resolver: zodResolver(bannerFormSchema),
+    defaultValues: bannerFormDefaultValues,
+  })
+
+  const imageUrl = watch('imageUrl')
 
   const loadBanners = useCallback(async () => {
     try {
@@ -33,7 +49,7 @@ export default function AdminBannersPage() {
   }, [loadBanners])
 
   const resetForm = () => {
-    setFormData({ name: '', description: '', imageUrl: '' })
+    reset(bannerFormDefaultValues)
     setShowForm(false)
     setEditingId(null)
   }
@@ -54,8 +70,8 @@ export default function AdminBannersPage() {
 
     setIsUploading(true)
     try {
-      const imageUrl = await fileApi.upload(file, 'BANNER')
-      setFormData((prev) => ({ ...prev, imageUrl }))
+      const url = await fileApi.upload(file, 'BANNER')
+      setValue('imageUrl', url)
     } catch {
       toast.error('이미지 업로드에 실패했습니다')
     } finally {
@@ -64,19 +80,14 @@ export default function AdminBannersPage() {
     }
   }
 
-  const handleSubmit = async () => {
-    if (!formData.name.trim() || !formData.description.trim() || !formData.imageUrl.trim()) {
-      toast.error('모든 필드를 입력해주세요')
-      return
-    }
-
+  const onSubmit = async (data: BannerFormData) => {
     setIsSubmitting(true)
     try {
       if (editingId) {
-        await adminBannerApi.updateBanner(editingId, formData)
+        await adminBannerApi.updateBanner(editingId, data)
         toast.success('배너가 수정되었습니다')
       } else {
-        await adminBannerApi.createBanner(formData)
+        await adminBannerApi.createBanner(data)
         toast.success('배너가 생성되었습니다')
       }
       resetForm()
@@ -88,8 +99,17 @@ export default function AdminBannersPage() {
     }
   }
 
+  const handleFormSubmit = () => {
+    handleSubmit(onSubmit, (errors) => {
+      const firstError = Object.values(errors)[0]
+      if (firstError?.message) {
+        toast.error(firstError.message)
+      }
+    })()
+  }
+
   const handleEdit = (banner: AdminBanner) => {
-    setFormData({ name: banner.name, description: banner.description, imageUrl: banner.imageUrl })
+    reset({ name: banner.name, description: banner.description, imageUrl: banner.imageUrl })
     setEditingId(banner.id)
     setShowForm(true)
   }
@@ -145,13 +165,13 @@ export default function AdminBannersPage() {
                 onChange={handleFileChange}
                 className="hidden"
               />
-              {formData.imageUrl ? (
+              {imageUrl ? (
                 <div
                   onClick={() => fileInputRef.current?.click()}
                   className="group relative cursor-pointer overflow-hidden rounded-lg"
                 >
                   <Image
-                    src={formData.imageUrl}
+                    src={imageUrl}
                     alt="Preview"
                     width={800}
                     height={200}
@@ -192,15 +212,13 @@ export default function AdminBannersPage() {
               <input
                 type="text"
                 placeholder="이름"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                {...register('name')}
                 className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
               />
               <input
                 type="text"
                 placeholder="설명"
-                value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                {...register('description')}
                 className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
               />
             </div>
@@ -212,8 +230,8 @@ export default function AdminBannersPage() {
                 취소
               </button>
               <button
-                onClick={handleSubmit}
-                disabled={isSubmitting || !formData.imageUrl}
+                onClick={handleFormSubmit}
+                disabled={isSubmitting || !imageUrl}
                 className="flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
                 {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
