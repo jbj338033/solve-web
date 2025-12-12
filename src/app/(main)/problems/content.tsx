@@ -92,10 +92,10 @@ export function ProblemsContent() {
   }, [loadProblems])
 
   useEffect(() => {
-    if (selectedDifficulties.length > 0 || selectedTags.length > 0) {
+    if (selectedDifficulties.length > 0 || selectedTags.length > 0 || sort !== 'LATEST') {
       setShowFilters(true)
     }
-  }, [selectedDifficulties.length, selectedTags.length])
+  }, [selectedDifficulties.length, selectedTags.length, sort])
 
   const loadMore = async () => {
     if (!hasNext || isLoadingMore || problems.length === 0) return
@@ -148,31 +148,20 @@ export function ProblemsContent() {
         <h1 className="text-xl font-semibold">문제</h1>
         <div className="flex items-center gap-2">
           <SearchInput value={query} onChange={setQuery} />
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as ProblemSort)}
-            className="h-9 rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-primary"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
               'flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors',
-              showFilters || filterCount > 0
+              showFilters || filterCount > 0 || sort !== 'LATEST'
                 ? 'border-primary bg-primary/5 text-primary'
                 : 'border-border text-muted-foreground hover:bg-muted/50'
             )}
           >
             <SlidersHorizontal className="size-4" />
             필터
-            {filterCount > 0 && (
+            {(filterCount > 0 || sort !== 'LATEST') && (
               <span className="flex size-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                {filterCount}
+                {filterCount + (sort !== 'LATEST' ? 1 : 0)}
               </span>
             )}
           </button>
@@ -182,6 +171,26 @@ export function ProblemsContent() {
       {showFilters && (
         <div className="mt-4 rounded-xl border border-border bg-muted/30 p-5">
           <div className="space-y-5">
+            <div>
+              <div className="mb-3 text-sm font-medium">정렬</div>
+              <div className="flex flex-wrap gap-2">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setSort(opt.value)}
+                    className={cn(
+                      'rounded-full border px-3 py-1 text-sm transition-colors',
+                      sort === opt.value
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border text-muted-foreground hover:border-primary/50'
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div>
               <div className="mb-3 text-sm font-medium">난이도</div>
               <div className="space-y-2">
