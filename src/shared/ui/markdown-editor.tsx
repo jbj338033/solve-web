@@ -156,7 +156,7 @@ export function MarkdownEditor({ value, onChange, placeholder, rows = 6, classNa
           style={{ '--rows': rows } as React.CSSProperties}
         >
           {value ? (
-            <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:my-2 prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1">
+            <div className="prose prose-sm max-w-none">
               <Markdown>{value}</Markdown>
             </div>
           ) : (
