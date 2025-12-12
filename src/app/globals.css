@@ -29,7 +29,7 @@
 
   --radius: 0.5rem;
 
-  --font-sans: var(--font-pretendard), "Pretendard Variable", Pretendard, system-ui, sans-serif;
+  --font-sans: var(--font-pretendard);
   --font-mono: var(--font-geist-mono), monospace;
 }
 
