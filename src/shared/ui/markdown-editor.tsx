@@ -1,7 +1,8 @@
 'use client'
 
 import { useRef, useState, useCallback } from 'react'
-import { ImageIcon, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import Markdown from 'react-markdown'
 import { fileApi } from '@/entities/file'
 import { cn } from '@/shared/lib'
 
@@ -17,6 +18,7 @@ export function MarkdownEditor({ value, onChange, placeholder, rows = 6, classNa
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
+  const [tab, setTab] = useState<'edit' | 'preview'>('edit')
 
   const insertTextAtCursor = useCallback(
     (text: string) => {
@@ -98,36 +100,70 @@ export function MarkdownEditor({ value, onChange, placeholder, rows = 6, classNa
   }, [])
 
   return (
-    <div className="relative">
-      <textarea
-        ref={textareaRef}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onPaste={handlePaste}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        placeholder={placeholder}
-        rows={rows}
-        className={cn(
-          'w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition-colors focus:border-primary',
-          isDragOver && 'border-primary bg-primary/5',
-          className
-        )}
-      />
-      <div className="pointer-events-none absolute bottom-2 right-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-        {isUploading ? (
-          <>
+    <div className={cn('relative', className)}>
+      <div className="mb-2 flex gap-1">
+        <button
+          type="button"
+          onClick={() => setTab('edit')}
+          className={cn(
+            'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+            tab === 'edit'
+              ? 'bg-muted text-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          편집
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('preview')}
+          className={cn(
+            'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+            tab === 'preview'
+              ? 'bg-muted text-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          미리보기
+        </button>
+        {isUploading && (
+          <div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
             <Loader2 className="size-3.5 animate-spin" />
             <span>업로드 중...</span>
-          </>
-        ) : (
-          <>
-            <ImageIcon className="size-3.5" />
-            <span>이미지 붙여넣기 가능</span>
-          </>
+          </div>
         )}
       </div>
+
+      {tab === 'edit' ? (
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onPaste={handlePaste}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          placeholder={placeholder}
+          rows={rows}
+          className={cn(
+            'w-full resize-none rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none transition-colors focus:border-primary',
+            isDragOver && 'border-primary bg-primary/5'
+          )}
+        />
+      ) : (
+        <div
+          className="min-h-[calc(1.5em*var(--rows)+1rem)] rounded-lg border border-border bg-background px-3 py-2"
+          style={{ '--rows': rows } as React.CSSProperties}
+        >
+          {value ? (
+            <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:my-2 prose-p:my-1 prose-pre:my-2 prose-ul:my-1 prose-ol:my-1">
+              <Markdown>{value}</Markdown>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{placeholder || '내용이 없습니다'}</p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
