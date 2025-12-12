@@ -29,7 +29,7 @@ const initialForm: ProblemFormData = {
 
 export default function AdminProblemNewPage() {
   const router = useRouter()
-  const [tags, setTags] = useState<{ id: string; name: string }[]>([])
+  const [tags, setTags] = useState<{ id: number; name: string }[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [form, setForm] = useState<ProblemFormData>(initialForm)

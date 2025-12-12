@@ -2,7 +2,7 @@ import { api, type CursorPage, type CursorParams } from '@/shared/api'
 import type { Contest, ContestDetail, ContestProblem, ScoringType, ScoreboardType, ContestType } from '../model/types'
 
 export interface ScoreboardResponse {
-  contestId: string
+  contestId: number
   participants: ParticipantScore[]
   frozenAt?: string
 }
@@ -21,7 +21,7 @@ export interface ParticipantScore {
 }
 
 export interface ProblemScore {
-  problemId: string
+  problemId: number
   score: number | null
   attempts: number
   solvedAt: string | null
@@ -29,7 +29,7 @@ export interface ProblemScore {
 }
 
 export interface ContestProblemRequest {
-  problemId: string
+  problemId: number
   score?: number
 }
 
@@ -62,27 +62,27 @@ export const contestApi = {
   getContests: (params?: CursorParams) =>
     api.get<CursorPage<Contest>>('/contests', { params }),
 
-  getContest: (contestId: string) =>
+  getContest: (contestId: number) =>
     api.get<ContestDetail>(`/contests/${contestId}`),
 
   createContest: (data: CreateContestRequest) =>
     api.post<ContestDetail>('/contests', data),
 
-  updateContest: (contestId: string, data: UpdateContestRequest) =>
+  updateContest: (contestId: number, data: UpdateContestRequest) =>
     api.patch<ContestDetail>(`/contests/${contestId}`, data),
 
-  deleteContest: (contestId: string) =>
+  deleteContest: (contestId: number) =>
     api.delete<void>(`/contests/${contestId}`),
 
-  getContestProblems: (contestId: string) =>
+  getContestProblems: (contestId: number) =>
     api.get<ContestProblem[]>(`/contests/${contestId}/problems`),
 
-  getScoreboard: (contestId: string) =>
+  getScoreboard: (contestId: number) =>
     api.get<ScoreboardResponse>(`/contests/${contestId}/scoreboard`),
 
-  joinContest: (contestId: string, inviteCode?: string) =>
+  joinContest: (contestId: number, inviteCode?: string) =>
     api.post<void>(`/contests/${contestId}/join`, { inviteCode }),
 
-  leaveContest: (contestId: string) =>
+  leaveContest: (contestId: number) =>
     api.post<void>(`/contests/${contestId}/leave`),
 }

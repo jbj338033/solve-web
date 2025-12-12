@@ -16,7 +16,7 @@ export default function AdminWorkbookNewPage() {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    problems: [] as { id: string; title: string; difficulty: ProblemDifficulty }[],
+    problems: [] as { id: number; title: string; difficulty: ProblemDifficulty }[],
   })
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -72,7 +72,7 @@ export default function AdminWorkbookNewPage() {
     setSearchQuery('')
   }
 
-  const removeProblem = (problemId: string) => {
+  const removeProblem = (problemId: number) => {
     setForm((prev) => ({
       ...prev,
       problems: prev.problems.filter((p) => p.id !== problemId),

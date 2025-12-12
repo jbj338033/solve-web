@@ -47,7 +47,7 @@ export function ProblemsContent() {
     [difficultiesParam]
   )
   const selectedTags = useMemo(
-    () => (tagsParam ? tagsParam.split(',') : []),
+    () => (tagsParam ? tagsParam.split(',').map(Number) : []),
     [tagsParam]
   )
 
@@ -64,7 +64,7 @@ export function ProblemsContent() {
     router.push(queryString ? `/problems?${queryString}` : '/problems', { scroll: false })
   }, [router, searchParams])
 
-  const loadProblems = useCallback(async (cursor?: string) => {
+  const loadProblems = useCallback(async (cursor?: number) => {
     try {
       const res = await problemApi.getProblems({
         cursor,
@@ -135,7 +135,7 @@ export function ProblemsContent() {
     updateParams({ difficulties: newDifficulties.length > 0 ? newDifficulties.join(',') : null })
   }
 
-  const toggleTag = (tagId: string) => {
+  const toggleTag = (tagId: number) => {
     const newTags = selectedTags.includes(tagId)
       ? selectedTags.filter((id) => id !== tagId)
       : [...selectedTags, tagId]
@@ -290,7 +290,7 @@ export function ProblemsContent() {
                   {problems.map((problem) => (
                     <tr
                       key={problem.id}
-                      onClick={() => router.push(`/problems/${problem.number}`)}
+                      onClick={() => router.push(`/problems/${problem.id}`)}
                       className="cursor-pointer border-b border-border last:border-0 hover:bg-muted/50"
                     >
                       <td className="px-4 py-3.5">

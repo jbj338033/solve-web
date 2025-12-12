@@ -1,22 +1,22 @@
 export interface SubmissionUser {
-  id: string
+  id: number
   username: string
   displayName: string
   profileImage: string | null
 }
 
 export interface SubmissionProblem {
-  id: string
+  id: number
   title: string
 }
 
 export interface SubmissionContest {
-  id: string
+  id: number
   title: string
 }
 
 export interface Submission {
-  id: string
+  id: number
   problem: SubmissionProblem
   contest: SubmissionContest | null
   user: SubmissionUser

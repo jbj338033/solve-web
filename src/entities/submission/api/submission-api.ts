@@ -10,14 +10,14 @@ export const submissionApi = {
   getSubmissions: (params?: CursorParams) =>
     api.get<CursorPage<Submission>>('/submissions', { params }),
 
-  getSubmission: (submissionId: string) =>
+  getSubmission: (submissionId: number) =>
     api.get<SubmissionDetail>(`/submissions/${submissionId}`),
 
-  createSubmission: (problemId: string, data: CreateSubmissionRequest) =>
-    api.post<Submission>(`/problems/${problemId}/submissions`, data),
+  createSubmission: (problemNumber: number, data: CreateSubmissionRequest) =>
+    api.post<Submission>(`/problems/${problemNumber}/submissions`, data),
 
-  createContestSubmission: (contestId: string, problemId: string, data: CreateSubmissionRequest) =>
-    api.post<Submission>(`/contests/${contestId}/problems/${problemId}/submissions`, data),
+  createContestSubmission: (contestId: number, problemNumber: number, data: CreateSubmissionRequest) =>
+    api.post<Submission>(`/contests/${contestId}/problems/${problemNumber}/submissions`, data),
 
   subscribeSubmissions: (
     onMessage: (type: 'NEW' | 'UPDATE', data: Submission) => void,

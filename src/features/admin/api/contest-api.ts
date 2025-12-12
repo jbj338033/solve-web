@@ -10,7 +10,7 @@ export interface CreateContestRequest {
   scoringType?: 'IOI' | 'ICPC'
   scoreboardType?: 'REALTIME' | 'FREEZE' | 'AFTER_CONTEST'
   freezeMinutes?: number
-  problems?: { problemId: string; score?: number }[]
+  problems?: { problemId: number; score?: number }[]
   isRated?: boolean
 }
 
@@ -20,15 +20,15 @@ export const adminContestApi = {
   getContests: (params?: CursorParams) =>
     api.get<CursorPage<AdminContest>>('/admin/contests', { params }),
 
-  getContest: (contestId: string) =>
+  getContest: (contestId: number) =>
     api.get<AdminContestDetail>(`/admin/contests/${contestId}`),
 
   createContest: (data: CreateContestRequest) =>
     api.post<void>('/admin/contests', data),
 
-  updateContest: (contestId: string, data: UpdateContestRequest) =>
+  updateContest: (contestId: number, data: UpdateContestRequest) =>
     api.patch<void>(`/admin/contests/${contestId}`, data),
 
-  deleteContest: (contestId: string) =>
+  deleteContest: (contestId: number) =>
     api.delete<void>(`/admin/contests/${contestId}`),
 }

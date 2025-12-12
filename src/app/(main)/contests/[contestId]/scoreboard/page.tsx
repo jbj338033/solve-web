@@ -33,8 +33,8 @@ export default function ContestScoreboardPage({ params }: Props) {
     if (showRefresh) setIsRefreshing(true)
     try {
       const [contestData, scoreboardData] = await Promise.all([
-        contestApi.getContest(contestId),
-        contestApi.getScoreboard(contestId),
+        contestApi.getContest(Number(contestId)),
+        contestApi.getScoreboard(Number(contestId)),
       ])
       setContest(contestData)
       setScoreboard(scoreboardData)
@@ -144,7 +144,7 @@ export default function ContestScoreboardPage({ params }: Props) {
                       className="w-20 whitespace-nowrap px-3 py-3 text-center text-sm font-medium text-muted-foreground"
                     >
                       <Link
-                        href={`/contests/${contestId}/problems/${problem.number}`}
+                        href={`/contests/${contestId}/problems/${problem.id}`}
                         className="hover:text-foreground"
                       >
                         {String.fromCharCode(65 + problem.order)}
@@ -206,7 +206,7 @@ function ParticipantRow({
   isTop3,
 }: {
   participant: ParticipantScore
-  problems: { id: string; order: number; score: number }[]
+  problems: { id: number; order: number; score: number }[]
   scoringType: string
   isTop3: boolean
 }) {

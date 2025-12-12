@@ -16,7 +16,7 @@ export interface ContestFormData {
   scoringType: 'IOI' | 'ICPC'
   scoreboardType: 'REALTIME' | 'FREEZE' | 'AFTER_CONTEST'
   freezeMinutes: number
-  problems: { problemId: string; title: string; score: number }[]
+  problems: { problemId: number; title: string; score: number }[]
   isRated: boolean
 }
 
@@ -61,14 +61,14 @@ export function ContestForm({ form, onChange }: Props) {
     setSearchQuery('')
   }
 
-  const removeProblem = (problemId: string) => {
+  const removeProblem = (problemId: number) => {
     updateField(
       'problems',
       form.problems.filter((p) => p.problemId !== problemId)
     )
   }
 
-  const updateProblemScore = (problemId: string, score: number) => {
+  const updateProblemScore = (problemId: number, score: number) => {
     updateField(
       'problems',
       form.problems.map((p) => (p.problemId === problemId ? { ...p, score } : p))

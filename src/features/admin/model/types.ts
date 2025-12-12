@@ -1,7 +1,7 @@
 import type { ProblemDifficulty, ProblemType } from '@/entities/problem'
 
 export interface AdminAuthor {
-  id: string
+  id: number
   username: string
   displayName: string
   profileImage: string | null
@@ -14,19 +14,19 @@ export interface AdminProblemExample {
 }
 
 export interface AdminProblemTestCase {
-  id: string
+  id: number
   input: string
   output: string
   order: number
 }
 
 export interface AdminProblemTag {
-  id: string
+  id: number
   name: string
 }
 
 export interface AdminProblem {
-  id: string
+  id: number
   title: string
   difficulty: ProblemDifficulty
   author: AdminAuthor
@@ -52,7 +52,7 @@ export interface AdminProblemDetail extends AdminProblem {
 }
 
 export interface AdminContestProblem {
-  id: string
+  id: number
   title: string
   difficulty: ProblemDifficulty
   order: number
@@ -60,10 +60,10 @@ export interface AdminContestProblem {
 }
 
 export interface AdminContest {
-  id: string
+  id: number
   title: string
   description: string | null
-  hostId: string
+  hostId: number
   startAt: string
   endAt: string
   type: 'PUBLIC' | 'PRIVATE'
@@ -82,14 +82,14 @@ export interface AdminContestDetail extends AdminContest {
 }
 
 export interface AdminWorkbookProblem {
-  id: string
+  id: number
   title: string
   difficulty: ProblemDifficulty
   type: ProblemType
 }
 
 export interface AdminWorkbook {
-  id: string
+  id: number
   title: string
   description: string | null
   author: AdminAuthor
@@ -102,14 +102,14 @@ export interface AdminWorkbookDetail extends AdminWorkbook {
 }
 
 export interface AdminTag {
-  id: string
+  id: number
   name: string
   createdAt: string
   updatedAt: string
 }
 
 export interface AdminBanner {
-  id: string
+  id: number
   name: string
   description: string
   imageUrl: string

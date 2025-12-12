@@ -15,7 +15,7 @@ export default function AdminWorkbooksPage() {
   const [hasNext, setHasNext] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
-  const loadWorkbooks = useCallback(async (cursor?: string) => {
+  const loadWorkbooks = useCallback(async (cursor?: number) => {
     try {
       const res = await adminWorkbookApi.getWorkbooks({ cursor, limit: 20 })
       if (cursor) {
@@ -43,7 +43,7 @@ export default function AdminWorkbooksPage() {
     }
   }
 
-  const handleDelete = async (workbookId: string) => {
+  const handleDelete = async (workbookId: number) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
     try {
       await adminWorkbookApi.deleteWorkbook(workbookId)

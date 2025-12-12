@@ -5,7 +5,7 @@ export interface ProblemFilterParams extends CursorParams {
   difficulties?: ProblemDifficulty[]
   type?: ProblemType
   query?: string
-  tagIds?: string[]
+  tagIds?: number[]
   sort?: ProblemSort
 }
 
@@ -23,7 +23,7 @@ export interface CreateProblemRequest {
   interactorCode?: string
   interactorLanguage?: string
   examples?: { input: string; output: string }[]
-  tagIds?: string[]
+  tagIds?: number[]
   isPublic?: boolean
 }
 
@@ -41,7 +41,7 @@ export interface UpdateProblemRequest {
   interactorCode?: string
   interactorLanguage?: string
   examples?: { input: string; output: string }[]
-  tagIds?: string[]
+  tagIds?: number[]
   isPublic?: boolean
 }
 

@@ -14,20 +14,19 @@ export type ProblemSort = 'LATEST' | 'DIFFICULTY_ASC' | 'DIFFICULTY_DESC' | 'ACC
 export type ProblemStatus = 'SOLVED' | 'ATTEMPTED'
 
 export interface ProblemAuthor {
-  id: string
+  id: number
   username: string
   displayName: string
   profileImage: string | null
 }
 
 export interface ProblemTag {
-  id: string
+  id: number
   name: string
 }
 
 export interface Problem {
-  id: string
-  number: number
+  id: number
   title: string
   difficulty: ProblemDifficulty
   author: ProblemAuthor

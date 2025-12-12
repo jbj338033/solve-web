@@ -19,7 +19,7 @@ export default function SubmissionsPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasNext, setHasNext] = useState(false)
 
-  const loadSubmissions = useCallback(async (cursor?: string) => {
+  const loadSubmissions = useCallback(async (cursor?: number) => {
     try {
       const res = await submissionApi.getSubmissions({ cursor, limit: 20 })
       if (cursor) {

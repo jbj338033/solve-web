@@ -11,7 +11,7 @@ export default function AdminTagsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [newTagName, setNewTagName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [editingName, setEditingName] = useState('')
 
   const loadTags = useCallback(async () => {
@@ -44,7 +44,7 @@ export default function AdminTagsPage() {
     }
   }
 
-  const handleUpdate = async (tagId: string) => {
+  const handleUpdate = async (tagId: number) => {
     if (!editingName.trim()) return
     try {
       await adminTagApi.updateTag(tagId, { name: editingName.trim() })
@@ -56,7 +56,7 @@ export default function AdminTagsPage() {
     }
   }
 
-  const handleDelete = async (tagId: string) => {
+  const handleDelete = async (tagId: number) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
     try {
       await adminTagApi.deleteTag(tagId)

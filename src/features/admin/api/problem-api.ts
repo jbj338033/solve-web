@@ -17,7 +17,7 @@ export interface CreateProblemRequest {
   interactorLanguage?: string
   examples?: { input: string; output: string }[]
   testcases?: { input: string; output: string }[]
-  tagIds?: string[]
+  tagIds?: number[]
   isPublic?: boolean
 }
 
@@ -27,15 +27,15 @@ export const adminProblemApi = {
   getProblems: (params?: CursorParams) =>
     api.get<CursorPage<AdminProblem>>('/admin/problems', { params }),
 
-  getProblem: (problemId: string) =>
+  getProblem: (problemId: number) =>
     api.get<AdminProblemDetail>(`/admin/problems/${problemId}`),
 
   createProblem: (data: CreateProblemRequest) =>
     api.post<void>('/admin/problems', data),
 
-  updateProblem: (problemId: string, data: UpdateProblemRequest) =>
+  updateProblem: (problemId: number, data: UpdateProblemRequest) =>
     api.patch<void>(`/admin/problems/${problemId}`, data),
 
-  deleteProblem: (problemId: string) =>
+  deleteProblem: (problemId: number) =>
     api.delete<void>(`/admin/problems/${problemId}`),
 }

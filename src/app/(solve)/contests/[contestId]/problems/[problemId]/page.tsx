@@ -4,18 +4,18 @@ import { contestApi, getContestStatus } from '@/entities/contest'
 import { SolveWorkspace } from '@/widgets/solve-workspace'
 
 interface Props {
-  params: Promise<{ contestId: string; problemNumber: string }>
+  params: Promise<{ contestId: string; problemId: string }>
 }
 
 export default async function ContestProblemSolvePage({ params }: Props) {
-  const { contestId, problemNumber } = await params
+  const { contestId, problemId } = await params
 
   let contest
   let problem
 
   try {
-    contest = await contestApi.getContest(contestId)
-    problem = await problemApi.getProblem(Number(problemNumber))
+    contest = await contestApi.getContest(Number(contestId))
+    problem = await problemApi.getProblem(Number(problemId))
   } catch {
     notFound()
   }
@@ -25,10 +25,10 @@ export default async function ContestProblemSolvePage({ params }: Props) {
     notFound()
   }
 
-  const contestProblem = contest.problems.find((p) => p.number === Number(problemNumber))
+  const contestProblem = contest.problems.find((p) => p.id === Number(problemId))
   if (!contestProblem) {
     notFound()
   }
 
-  return <SolveWorkspace problem={problem} contestId={contestId} />
+  return <SolveWorkspace problem={problem} contestId={Number(contestId)} />
 }

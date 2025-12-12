@@ -14,7 +14,7 @@ export default function ContestsPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [search, setSearch] = useState('')
 
-  const loadContests = useCallback(async (cursor?: string) => {
+  const loadContests = useCallback(async (cursor?: number) => {
     try {
       const res = await contestApi.getContests({ cursor, limit: 20 })
       if (cursor) {

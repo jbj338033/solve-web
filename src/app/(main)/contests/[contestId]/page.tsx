@@ -27,7 +27,7 @@ export default function ContestDetailPage({ params }: Props) {
 
   const loadContest = useCallback(async () => {
     try {
-      const data = await contestApi.getContest(contestId)
+      const data = await contestApi.getContest(Number(contestId))
       setContest(data)
     } catch {
       router.push('/contests')
@@ -56,7 +56,7 @@ export default function ContestDetailPage({ params }: Props) {
 
     setIsJoining(true)
     try {
-      await contestApi.joinContest(contestId, contest?.type === 'PRIVATE' ? inviteCode : undefined)
+      await contestApi.joinContest(Number(contestId), contest?.type === 'PRIVATE' ? inviteCode : undefined)
       toast.success('대회에 참가했습니다')
       setShowInviteInput(false)
       setInviteCode('')
@@ -71,7 +71,7 @@ export default function ContestDetailPage({ params }: Props) {
   const handleLeave = async () => {
     setIsLeaving(true)
     try {
-      await contestApi.leaveContest(contestId)
+      await contestApi.leaveContest(Number(contestId))
       toast.success('참가를 취소했습니다')
       loadContest()
     } catch (err) {
@@ -263,7 +263,7 @@ export default function ContestDetailPage({ params }: Props) {
                     .map((problem) => (
                       <tr
                         key={problem.id}
-                        onClick={() => canSolve && router.push(`/contests/${contestId}/problems/${problem.number}`)}
+                        onClick={() => canSolve && router.push(`/contests/${contestId}/problems/${problem.id}`)}
                         className={cn(
                           'border-b border-border last:border-0',
                           canSolve && 'cursor-pointer hover:bg-muted/50'

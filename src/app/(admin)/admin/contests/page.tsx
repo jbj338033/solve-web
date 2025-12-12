@@ -16,7 +16,7 @@ export default function AdminContestsPage() {
   const [hasNext, setHasNext] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
-  const loadContests = useCallback(async (cursor?: string) => {
+  const loadContests = useCallback(async (cursor?: number) => {
     try {
       const res = await adminContestApi.getContests({ cursor, limit: 20 })
       if (cursor) {
@@ -44,7 +44,7 @@ export default function AdminContestsPage() {
     }
   }
 
-  const handleDelete = async (contestId: string) => {
+  const handleDelete = async (contestId: number) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
     try {
       await adminContestApi.deleteContest(contestId)

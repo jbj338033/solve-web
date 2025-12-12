@@ -14,9 +14,9 @@ export const adminTagApi = {
   createTag: (data: CreateTagRequest) =>
     api.post<void>('/admin/tags', data),
 
-  updateTag: (tagId: string, data: UpdateTagRequest) =>
+  updateTag: (tagId: number, data: UpdateTagRequest) =>
     api.patch<void>(`/admin/tags/${tagId}`, data),
 
-  deleteTag: (tagId: string) =>
+  deleteTag: (tagId: number) =>
     api.delete<void>(`/admin/tags/${tagId}`),
 }

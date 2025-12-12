@@ -13,15 +13,15 @@ export const adminBannerApi = {
   getBanners: () =>
     api.get<AdminBanner[]>('/admin/banners'),
 
-  getBanner: (bannerId: string) =>
+  getBanner: (bannerId: number) =>
     api.get<AdminBanner>(`/admin/banners/${bannerId}`),
 
   createBanner: (data: CreateBannerRequest) =>
     api.post<void>('/admin/banners', data),
 
-  updateBanner: (bannerId: string, data: UpdateBannerRequest) =>
+  updateBanner: (bannerId: number, data: UpdateBannerRequest) =>
     api.patch<void>(`/admin/banners/${bannerId}`, data),
 
-  deleteBanner: (bannerId: string) =>
+  deleteBanner: (bannerId: number) =>
     api.delete<void>(`/admin/banners/${bannerId}`),
 }

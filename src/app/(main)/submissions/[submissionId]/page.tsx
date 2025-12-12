@@ -25,7 +25,7 @@ export default function SubmissionDetailPage({ params }: Props) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    submissionApi.getSubmission(submissionId)
+    submissionApi.getSubmission(Number(submissionId))
       .then(setSubmission)
       .catch(() => router.push('/submissions'))
       .finally(() => setIsLoading(false))
@@ -36,7 +36,7 @@ export default function SubmissionDetailPage({ params }: Props) {
     if (!submission || submission.status === 'COMPLETED') return
 
     const unsubscribe = submissionApi.subscribeSubmissions((type, data) => {
-      if (type === 'UPDATE' && data.id === submissionId) {
+      if (type === 'UPDATE' && data.id === Number(submissionId)) {
         setSubmission((prev) => prev ? { ...prev, ...data } : prev)
       }
     })
@@ -82,7 +82,7 @@ export default function SubmissionDetailPage({ params }: Props) {
       <div className="mt-6 rounded-lg border border-border">
         <div className="border-b border-border bg-muted/50 px-6 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="font-medium">제출 #{submission.id.slice(0, 8)}</h1>
+            <h1 className="font-medium">제출 #{submission.id}</h1>
             <ResultBadge submission={submission} />
           </div>
         </div>

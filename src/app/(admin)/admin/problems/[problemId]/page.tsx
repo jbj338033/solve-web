@@ -18,10 +18,11 @@ interface Props {
 }
 
 export default function AdminProblemDetailPage({ params }: Props) {
-  const { problemId } = use(params)
+  const { problemId: problemIdParam } = use(params)
+  const problemId = Number(problemIdParam)
   const router = useRouter()
   const [problem, setProblem] = useState<AdminProblemDetail | null>(null)
-  const [tags, setTags] = useState<{ id: string; name: string }[]>([])
+  const [tags, setTags] = useState<{ id: number; name: string }[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [form, setForm] = useState<ProblemFormData>({

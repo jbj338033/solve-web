@@ -14,7 +14,8 @@ interface Props {
 }
 
 export default function AdminWorkbookDetailPage({ params }: Props) {
-  const { workbookId } = use(params)
+  const { workbookId: workbookIdParam } = use(params)
+  const workbookId = Number(workbookIdParam)
   const router = useRouter()
   const [workbook, setWorkbook] = useState<AdminWorkbookDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -23,7 +24,7 @@ export default function AdminWorkbookDetailPage({ params }: Props) {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    problems: [] as { id: string; title: string; difficulty: ProblemDifficulty }[],
+    problems: [] as { id: number; title: string; difficulty: ProblemDifficulty }[],
   })
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -103,7 +104,7 @@ export default function AdminWorkbookDetailPage({ params }: Props) {
     setSearchQuery('')
   }
 
-  const removeProblem = (problemId: string) => {
+  const removeProblem = (problemId: number) => {
     setForm((prev) => ({
       ...prev,
       problems: prev.problems.filter((p) => p.id !== problemId),

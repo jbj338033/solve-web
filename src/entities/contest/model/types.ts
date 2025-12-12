@@ -2,10 +2,10 @@ import { parseDate } from '@/shared/lib'
 import type { ProblemDifficulty } from '@/entities/problem/model/types'
 
 export interface Contest {
-  id: string
+  id: number
   title: string
   description: string | null
-  hostId: string
+  hostId: number
   startAt: string
   endAt: string
   type: ContestType
@@ -26,8 +26,7 @@ export interface ContestDetail extends Contest {
 export interface ContestProblem {
   order: number
   score: number
-  id: string
-  number: number
+  id: number
   title: string
   difficulty: ProblemDifficulty
 }

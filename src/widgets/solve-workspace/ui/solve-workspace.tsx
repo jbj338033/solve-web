@@ -40,7 +40,7 @@ interface SubmitState {
 
 interface Props {
   problem: ProblemDetail
-  contestId?: string
+  contestId?: number
 }
 
 export function SolveWorkspace({ problem, contestId }: Props) {

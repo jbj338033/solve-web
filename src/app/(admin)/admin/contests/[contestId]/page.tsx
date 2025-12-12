@@ -18,7 +18,8 @@ interface Props {
 }
 
 export default function AdminContestDetailPage({ params }: Props) {
-  const { contestId } = use(params)
+  const { contestId: contestIdParam } = use(params)
+  const contestId = Number(contestIdParam)
   const router = useRouter()
   const [contest, setContest] = useState<AdminContestDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)

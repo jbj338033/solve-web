@@ -14,7 +14,7 @@ export default function WorkbooksPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [search, setSearch] = useState('')
 
-  const loadWorkbooks = useCallback(async (cursor?: string) => {
+  const loadWorkbooks = useCallback(async (cursor?: number) => {
     try {
       const res = await workbookApi.getWorkbooks({ cursor, limit: 20 })
       if (cursor) {

@@ -1,5 +1,5 @@
 export interface User {
-  id: string
+  id: number
   username: string
   displayName: string
   email: string
@@ -23,13 +23,13 @@ export type Tier =
   | 'UNIVERSE'
 
 export interface BannerInfo {
-  id: string
+  id: number
   name: string
   imageUrl: string
 }
 
 export interface UserProfile {
-  id: string
+  id: number
   username: string
   displayName: string
   profileImage: string | null
@@ -61,7 +61,7 @@ export interface TagStat {
 export interface UserRatingHistory {
   rating: number
   ratingType: 'PROBLEM' | 'CONTEST'
-  contestId: string | null
+  contestId: number | null
   recordedAt: string
 }
 
@@ -77,7 +77,7 @@ export type OAuthProvider = 'GOOGLE' | 'GITHUB'
 
 export interface UserRank {
   rank: number
-  id: string
+  id: number
   username: string
   displayName: string
   profileImage: string | null

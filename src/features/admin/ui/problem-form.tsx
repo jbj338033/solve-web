@@ -50,12 +50,12 @@ export interface ProblemFormData {
   type: ProblemType
   examples: { input: string; output: string }[]
   testcases: { input: string; output: string }[]
-  tagIds: string[]
+  tagIds: number[]
   isPublic: boolean
 }
 
 interface Tag {
-  id: string
+  id: number
   name: string
 }
 
@@ -94,7 +94,7 @@ export function ProblemForm({ form, onChange, tags }: Props) {
     updateField('testcases', form.testcases.map((e, i) => (i === index ? { ...e, [field]: value } : e)))
   }
 
-  const toggleTag = (tagId: string) => {
+  const toggleTag = (tagId: number) => {
     updateField(
       'tagIds',
       form.tagIds.includes(tagId) ? form.tagIds.filter((id) => id !== tagId) : [...form.tagIds, tagId]

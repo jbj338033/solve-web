@@ -14,7 +14,7 @@ export default function AdminBannersPage() {
   const [formData, setFormData] = useState({ name: '', description: '', imageUrl: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const loadBanners = useCallback(async () => {
@@ -94,7 +94,7 @@ export default function AdminBannersPage() {
     setShowForm(true)
   }
 
-  const handleDelete = async (bannerId: string) => {
+  const handleDelete = async (bannerId: number) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
     try {
       await adminBannerApi.deleteBanner(bannerId)

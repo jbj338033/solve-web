@@ -1,22 +1,21 @@
 import type { ProblemDifficulty, ProblemType } from '@/entities/problem/model/types'
 
 export interface WorkbookAuthor {
-  id: string
+  id: number
   username: string
   displayName: string
   profileImage: string | null
 }
 
 export interface WorkbookProblem {
-  id: string
-  number: number
+  id: number
   title: string
   difficulty: ProblemDifficulty
   type: ProblemType
 }
 
 export interface Workbook {
-  id: string
+  id: number
   title: string
   description: string | null
   author: WorkbookAuthor

@@ -16,7 +16,7 @@ export default function AdminProblemsPage() {
   const [hasNext, setHasNext] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
-  const loadProblems = useCallback(async (cursor?: string) => {
+  const loadProblems = useCallback(async (cursor?: number) => {
     try {
       const res = await adminProblemApi.getProblems({ cursor, limit: 20 })
       if (cursor) {
@@ -44,7 +44,7 @@ export default function AdminProblemsPage() {
     }
   }
 
-  const handleDelete = async (problemId: string) => {
+  const handleDelete = async (problemId: number) => {
     if (!confirm('정말 삭제하시겠습니까?')) return
     try {
       await adminProblemApi.deleteProblem(problemId)
