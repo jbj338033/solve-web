@@ -3,11 +3,13 @@
 import { use, useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useForm, useFieldArray } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Loader2, Save, Plus, Trash2, Search, GripVertical } from 'lucide-react'
 import { adminWorkbookApi, adminProblemApi, type AdminWorkbookDetail, type AdminProblem } from '@/features/admin'
 import { DifficultyBadge } from '@/shared/ui'
-import type { ProblemDifficulty } from '@/entities/problem'
+import { workbookFormSchema, workbookFormDefaultValues, type WorkbookFormData } from '@/shared/lib'
 
 interface Props {
   params: Promise<{ workbookId: string }>
@@ -20,22 +22,25 @@ export default function AdminWorkbookDetailPage({ params }: Props) {
   const [workbook, setWorkbook] = useState<AdminWorkbookDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    problems: [] as { id: number; title: string; difficulty: ProblemDifficulty }[],
-  })
-
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<AdminProblem[]>([])
   const [isSearching, setIsSearching] = useState(false)
+
+  const { register, control, handleSubmit, reset } = useForm<WorkbookFormData>({
+    resolver: zodResolver(workbookFormSchema) as any,
+    defaultValues: workbookFormDefaultValues,
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'problems',
+  })
 
   const loadData = useCallback(async () => {
     try {
       const data = await adminWorkbookApi.getWorkbook(workbookId)
       setWorkbook(data)
-      setForm({
+      reset({
         title: data.title,
         description: data.description || '',
         problems: data.problems.map((p) => ({
@@ -50,24 +55,19 @@ export default function AdminWorkbookDetailPage({ params }: Props) {
     } finally {
       setIsLoading(false)
     }
-  }, [workbookId, router])
+  }, [workbookId, router, reset])
 
   useEffect(() => {
     loadData()
   }, [loadData])
 
-  const handleSave = async () => {
-    if (!form.title.trim()) {
-      toast.error('제목을 입력해주세요')
-      return
-    }
-
+  const onSubmit = async (data: WorkbookFormData) => {
     setIsSaving(true)
     try {
       await adminWorkbookApi.updateWorkbook(workbookId, {
-        title: form.title,
-        description: form.description,
-        problemIds: form.problems.map((p) => p.id),
+        title: data.title,
+        description: data.description,
+        problemIds: data.problems.map((p) => p.id),
       })
       toast.success('저장되었습니다')
     } catch {
@@ -75,6 +75,15 @@ export default function AdminWorkbookDetailPage({ params }: Props) {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleSave = () => {
+    handleSubmit(onSubmit, (errors) => {
+      const firstError = Object.values(errors)[0]
+      if (firstError?.message) {
+        toast.error(firstError.message as string)
+      }
+    })()
   }
 
   const handleSearch = async () => {
@@ -85,7 +94,7 @@ export default function AdminWorkbookDetailPage({ params }: Props) {
       const filtered = res.content.filter(
         (p) =>
           p.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !form.problems.some((fp) => fp.id === p.id)
+          !fields.some((fp) => fp.id === p.id)
       )
       setSearchResults(filtered)
     } catch {
@@ -96,19 +105,9 @@ export default function AdminWorkbookDetailPage({ params }: Props) {
   }
 
   const addProblem = (problem: AdminProblem) => {
-    setForm((prev) => ({
-      ...prev,
-      problems: [...prev.problems, { id: problem.id, title: problem.title, difficulty: problem.difficulty }],
-    }))
+    append({ id: problem.id, title: problem.title, difficulty: problem.difficulty })
     setSearchResults((prev) => prev.filter((p) => p.id !== problem.id))
     setSearchQuery('')
-  }
-
-  const removeProblem = (problemId: number) => {
-    setForm((prev) => ({
-      ...prev,
-      problems: prev.problems.filter((p) => p.id !== problemId),
-    }))
   }
 
   if (isLoading) {
@@ -145,8 +144,7 @@ export default function AdminWorkbookDetailPage({ params }: Props) {
           <label className="mb-1.5 block text-sm font-medium">제목</label>
           <input
             type="text"
-            value={form.title}
-            onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+            {...register('title')}
             className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
           />
         </div>
@@ -154,8 +152,7 @@ export default function AdminWorkbookDetailPage({ params }: Props) {
         <div>
           <label className="mb-1.5 block text-sm font-medium">설명</label>
           <textarea
-            value={form.description}
-            onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+            {...register('description')}
             rows={4}
             className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
           />
@@ -200,23 +197,23 @@ export default function AdminWorkbookDetailPage({ params }: Props) {
             </div>
           )}
 
-          {form.problems.length === 0 ? (
+          {fields.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
               문제가 없습니다
             </div>
           ) : (
             <div className="space-y-2">
-              {form.problems.map((problem, index) => (
+              {fields.map((field, index) => (
                 <div
-                  key={problem.id}
+                  key={field.id}
                   className="flex items-center gap-3 rounded-lg border border-border px-4 py-3"
                 >
                   <GripVertical className="size-4 shrink-0 text-muted-foreground" />
                   <span className="w-8 shrink-0 text-sm text-muted-foreground">{index + 1}</span>
-                  <DifficultyBadge difficulty={problem.difficulty} />
-                  <span className="flex-1 text-sm">{problem.title}</span>
+                  <DifficultyBadge difficulty={field.difficulty} />
+                  <span className="flex-1 text-sm">{field.title}</span>
                   <button
-                    onClick={() => removeProblem(problem.id)}
+                    onClick={() => remove(index)}
                     className="text-muted-foreground hover:text-red-500"
                   >
                     <Trash2 className="size-4" />
