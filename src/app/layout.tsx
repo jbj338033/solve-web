@@ -5,9 +5,10 @@ import { Providers } from './providers'
 import './globals.css'
 
 const pretendard = localFont({
-  src: './fonts/PretendardVariable.woff2',
-  variable: '--font-pretendard',
+  src: './fonts/pretendard.woff2',
   display: 'swap',
+  variable: '--font-pretendard',
+  fallback: ['system-ui', 'sans-serif'],
 })
 
 const geistMono = Geist_Mono({
@@ -27,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`${pretendard.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${pretendard.className} ${geistMono.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>
