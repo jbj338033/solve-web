@@ -1,4 +1,5 @@
 import { api, type CursorPage, type CursorParams } from '@/shared/api'
+import { WS_URL } from '@/shared/config'
 import type { Submission, SubmissionDetail, Language } from '../model/types'
 
 export interface CreateSubmissionRequest {
@@ -23,8 +24,7 @@ export const submissionApi = {
     onMessage: (type: 'NEW' | 'UPDATE', data: Submission) => void,
     onError?: () => void
   ) => {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
-    const ws = new WebSocket(`${wsUrl}/ws/submissions`)
+    const ws = new WebSocket(`${WS_URL}/ws/submissions`)
 
     ws.onmessage = (event) => {
       try {

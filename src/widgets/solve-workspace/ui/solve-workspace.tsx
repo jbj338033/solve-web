@@ -12,6 +12,7 @@ import { ProblemViewer } from '@/widgets/problem-viewer'
 import { useResizer } from '@/shared/hooks'
 import { Resizer } from '@/shared/ui'
 import { cn } from '@/shared/lib'
+import { WS_URL } from '@/shared/config'
 
 const LANGUAGES = [
   { value: 'cpp', label: 'C++', cmd: './main' },
@@ -103,8 +104,7 @@ export function SolveWorkspace({ problem, contestId }: Props) {
     setResult(null)
     completedRef.current = false
 
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
-    const ws = new WebSocket(`${wsUrl}/ws/executions`)
+    const ws = new WebSocket(`${WS_URL}/ws/executions`)
     wsRef.current = ws
 
     ws.onopen = () => {
