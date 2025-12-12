@@ -12,7 +12,6 @@ import { ProblemViewer } from '@/widgets/problem-viewer'
 import { useResizer } from '@/shared/hooks'
 import { Resizer } from '@/shared/ui'
 import { cn } from '@/shared/lib'
-import { useAuthStore } from '@/entities/auth'
 
 const LANGUAGES = [
   { value: 'cpp', label: 'C++', cmd: './main' },
@@ -105,8 +104,7 @@ export function SolveWorkspace({ problem, contestId }: Props) {
     completedRef.current = false
 
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080'
-    const token = useAuthStore.getState().accessToken
-    const ws = new WebSocket(`${wsUrl}/ws/executions${token ? `?token=${token}` : ''}`)
+    const ws = new WebSocket(`${wsUrl}/ws/executions`)
     wsRef.current = ws
 
     ws.onopen = () => {
