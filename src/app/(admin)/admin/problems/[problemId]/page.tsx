@@ -3,15 +3,21 @@
 import { use, useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useForm, FormProvider } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Loader2, Save } from 'lucide-react'
 import {
   adminProblemApi,
   adminTagApi,
   ProblemForm,
-  type ProblemFormData,
   type AdminProblemDetail,
 } from '@/features/admin'
+import {
+  problemFormSchema,
+  problemFormDefaultValues,
+  type ProblemFormData,
+} from '@/shared/lib'
 
 interface Props {
   params: Promise<{ problemId: string }>
@@ -25,19 +31,10 @@ export default function AdminProblemDetailPage({ params }: Props) {
   const [tags, setTags] = useState<{ id: number; name: string }[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [form, setForm] = useState<ProblemFormData>({
-    title: '',
-    description: '',
-    inputFormat: '',
-    outputFormat: '',
-    difficulty: 'UNRATED',
-    timeLimit: 1000,
-    memoryLimit: 256,
-    type: 'STANDARD',
-    examples: [{ input: '', output: '' }],
-    testcases: [],
-    tagIds: [],
-    isPublic: false,
+
+  const methods = useForm<ProblemFormData>({
+    resolver: zodResolver(problemFormSchema),
+    defaultValues: problemFormDefaultValues,
   })
 
   const loadData = useCallback(async () => {
@@ -48,7 +45,7 @@ export default function AdminProblemDetailPage({ params }: Props) {
       ])
       setProblem(problemData)
       setTags(tagsData)
-      setForm({
+      methods.reset({
         title: problemData.title,
         description: problemData.description,
         inputFormat: problemData.inputFormat,
@@ -71,33 +68,28 @@ export default function AdminProblemDetailPage({ params }: Props) {
     } finally {
       setIsLoading(false)
     }
-  }, [problemId, router])
+  }, [problemId, router, methods])
 
   useEffect(() => {
     loadData()
   }, [loadData])
 
-  const handleSave = async () => {
-    if (!form.title.trim()) {
-      toast.error('제목을 입력해주세요')
-      return
-    }
-
+  const onSubmit = async (data: ProblemFormData) => {
     setIsSaving(true)
     try {
       await adminProblemApi.updateProblem(problemId, {
-        title: form.title,
-        description: form.description,
-        inputFormat: form.inputFormat,
-        outputFormat: form.outputFormat,
-        difficulty: form.difficulty,
-        timeLimit: form.timeLimit,
-        memoryLimit: form.memoryLimit,
-        type: form.type,
-        examples: form.examples.filter((e) => e.input.trim() || e.output.trim()),
-        testcases: form.testcases.filter((t) => t.input.trim() || t.output.trim()),
-        tagIds: form.tagIds,
-        isPublic: form.isPublic,
+        title: data.title,
+        description: data.description,
+        inputFormat: data.inputFormat,
+        outputFormat: data.outputFormat,
+        difficulty: data.difficulty,
+        timeLimit: data.timeLimit,
+        memoryLimit: data.memoryLimit,
+        type: data.type,
+        examples: data.examples.filter((e) => e.input.trim() || e.output.trim()),
+        testcases: data.testcases.filter((t) => t.input.trim() || t.output.trim()),
+        tagIds: data.tagIds,
+        isPublic: data.isPublic,
       })
       toast.success('저장되었습니다')
     } catch {
@@ -105,6 +97,15 @@ export default function AdminProblemDetailPage({ params }: Props) {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleSave = () => {
+    methods.handleSubmit(onSubmit, (errors) => {
+      const firstError = Object.values(errors)[0]
+      if (firstError?.message) {
+        toast.error(firstError.message as string)
+      }
+    })()
   }
 
   if (isLoading) {
@@ -136,7 +137,9 @@ export default function AdminProblemDetailPage({ params }: Props) {
         </button>
       </div>
 
-      <ProblemForm form={form} onChange={setForm} tags={tags} />
+      <FormProvider {...methods}>
+        <ProblemForm tags={tags} />
+      </FormProvider>
     </div>
   )
 }

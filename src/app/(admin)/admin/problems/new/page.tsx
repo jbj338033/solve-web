@@ -3,76 +3,50 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useForm, FormProvider } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Loader2, Save } from 'lucide-react'
+import { adminProblemApi, adminTagApi, ProblemForm } from '@/features/admin'
 import {
-  adminProblemApi,
-  adminTagApi,
-  ProblemForm,
+  problemFormSchema,
+  problemFormDefaultValues,
   type ProblemFormData,
-} from '@/features/admin'
-
-const initialForm: ProblemFormData = {
-  title: '',
-  description: '',
-  inputFormat: '',
-  outputFormat: '',
-  difficulty: 'UNRATED',
-  timeLimit: 1000,
-  memoryLimit: 256,
-  type: 'STANDARD',
-  examples: [{ input: '', output: '' }],
-  testcases: [],
-  tagIds: [],
-  isPublic: false,
-}
+} from '@/shared/lib'
 
 export default function AdminProblemNewPage() {
   const router = useRouter()
   const [tags, setTags] = useState<{ id: number; name: string }[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [form, setForm] = useState<ProblemFormData>(initialForm)
+
+  const methods = useForm<ProblemFormData>({
+    resolver: zodResolver(problemFormSchema),
+    defaultValues: problemFormDefaultValues,
+  })
 
   useEffect(() => {
     adminTagApi.getTags().then(setTags).finally(() => setIsLoading(false))
   }, [])
 
-  const handleSave = async () => {
-    if (!form.title.trim()) {
-      toast.error('제목을 입력해주세요')
-      return
-    }
-    if (!form.description.trim()) {
-      toast.error('문제 설명을 입력해주세요')
-      return
-    }
-    if (!form.inputFormat.trim()) {
-      toast.error('입력 형식을 입력해주세요')
-      return
-    }
-    if (!form.outputFormat.trim()) {
-      toast.error('출력 형식을 입력해주세요')
-      return
-    }
-
+  const onSubmit = async (data: ProblemFormData) => {
     setIsSaving(true)
     try {
-      const examples = form.examples.filter((e) => e.input.trim() || e.output.trim())
-      const testcases = form.testcases.filter((t) => t.input.trim() || t.output.trim())
+      const examples = data.examples.filter((e) => e.input.trim() || e.output.trim())
+      const testcases = data.testcases.filter((t) => t.input.trim() || t.output.trim())
       await adminProblemApi.createProblem({
-        title: form.title,
-        description: form.description,
-        inputFormat: form.inputFormat,
-        outputFormat: form.outputFormat,
-        difficulty: form.difficulty,
-        timeLimit: form.timeLimit,
-        memoryLimit: form.memoryLimit,
-        type: form.type,
+        title: data.title,
+        description: data.description,
+        inputFormat: data.inputFormat,
+        outputFormat: data.outputFormat,
+        difficulty: data.difficulty,
+        timeLimit: data.timeLimit,
+        memoryLimit: data.memoryLimit,
+        type: data.type,
         examples: examples.length > 0 ? examples : undefined,
         testcases: testcases.length > 0 ? testcases : undefined,
-        tagIds: form.tagIds.length > 0 ? form.tagIds : undefined,
-        isPublic: form.isPublic,
+        tagIds: data.tagIds.length > 0 ? data.tagIds : undefined,
+        isPublic: data.isPublic,
       })
       toast.success('문제가 생성되었습니다')
       router.push('/admin/problems')
@@ -81,6 +55,15 @@ export default function AdminProblemNewPage() {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleSave = () => {
+    methods.handleSubmit(onSubmit, (errors) => {
+      const firstError = Object.values(errors)[0]
+      if (firstError?.message) {
+        toast.error(firstError.message as string)
+      }
+    })()
   }
 
   if (isLoading) {
@@ -110,7 +93,9 @@ export default function AdminProblemNewPage() {
         </button>
       </div>
 
-      <ProblemForm form={form} onChange={setForm} tags={tags} />
+      <FormProvider {...methods}>
+        <ProblemForm tags={tags} />
+      </FormProvider>
     </div>
   )
 }
