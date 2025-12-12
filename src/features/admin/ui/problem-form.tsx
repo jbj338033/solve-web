@@ -200,7 +200,7 @@ export function ProblemForm({ tags }: Props) {
                 <MarkdownEditor
                   value={field.value}
                   onChange={field.onChange}
-                  placeholder="문제에 대한 설명을 작성하세요. 마크다운을 지원하며, 이미지를 붙여넣으면 자동으로 업로드됩니다."
+                  placeholder="문제 설명을 작성하세요"
                   rows={10}
                 />
               )}
