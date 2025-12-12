@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+import { useQueryState, parseAsArrayOf, parseAsString } from 'nuqs'
 import { Search, Loader2, SlidersHorizontal, X } from 'lucide-react'
 import { problemApi, type Problem, type ProblemDifficulty, type ProblemSort } from '@/entities/problem'
 import { tagApi, type Tag } from '@/entities/tag'
@@ -28,7 +29,21 @@ const SORT_OPTIONS: { value: ProblemSort; label: string }[] = [
 
 export function ProblemsContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+
+  const [query, setQuery] = useQueryState('query', { defaultValue: '' })
+  const [sort, setSort] = useQueryState<ProblemSort>('sort', {
+    defaultValue: 'LATEST',
+    parse: (v) => v as ProblemSort,
+    serialize: (v) => (v === 'LATEST' ? '' : v),
+  })
+  const [difficulties, setDifficulties] = useQueryState(
+    'difficulties',
+    parseAsArrayOf(parseAsString).withDefault([])
+  )
+  const [tagIds, setTagIds] = useQueryState(
+    'tags',
+    parseAsArrayOf(parseAsString).withDefault([])
+  )
 
   const [problems, setProblems] = useState<Problem[]>([])
   const [tags, setTags] = useState<Tag[]>([])
@@ -37,32 +52,14 @@ export function ProblemsContent() {
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
-  const query = searchParams.get('query') || ''
-  const sort = (searchParams.get('sort') as ProblemSort) || 'LATEST'
-  const difficultiesParam = searchParams.get('difficulties') || ''
-  const tagsParam = searchParams.get('tags') || ''
-
   const selectedDifficulties = useMemo(
-    () => (difficultiesParam ? difficultiesParam.split(',') : []) as ProblemDifficulty[],
-    [difficultiesParam]
+    () => difficulties as ProblemDifficulty[],
+    [difficulties]
   )
   const selectedTags = useMemo(
-    () => (tagsParam ? tagsParam.split(',').map(Number) : []),
-    [tagsParam]
+    () => tagIds.map(Number),
+    [tagIds]
   )
-
-  const updateParams = useCallback((updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString())
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value)
-      } else {
-        params.delete(key)
-      }
-    })
-    const queryString = params.toString()
-    router.push(queryString ? `/problems?${queryString}` : '/problems', { scroll: false })
-  }, [router, searchParams])
 
   const loadProblems = useCallback(async (cursor?: number) => {
     try {
@@ -107,46 +104,42 @@ export function ProblemsContent() {
     setIsLoadingMore(false)
   }
 
-  const handleQueryChange = (value: string) => {
-    updateParams({ query: value || null })
-  }
-
-  const handleSortChange = (value: ProblemSort) => {
-    updateParams({ sort: value === 'LATEST' ? null : value })
-  }
-
   const toggleTier = (tier: string) => {
     const tierDifficulties = [5, 4, 3, 2, 1].map((n) => `${tier}_${n}`)
-    const allSelected = tierDifficulties.every((d) => selectedDifficulties.includes(d as ProblemDifficulty))
+    const allSelected = tierDifficulties.every((d) => difficulties.includes(d))
 
-    let newDifficulties: string[]
     if (allSelected) {
-      newDifficulties = selectedDifficulties.filter((d) => !tierDifficulties.includes(d))
+      setDifficulties(difficulties.filter((d) => !tierDifficulties.includes(d)))
     } else {
-      newDifficulties = [...selectedDifficulties.filter((d) => !tierDifficulties.includes(d)), ...tierDifficulties]
+      setDifficulties([...difficulties.filter((d) => !tierDifficulties.includes(d)), ...tierDifficulties])
     }
-    updateParams({ difficulties: newDifficulties.length > 0 ? newDifficulties.join(',') : null })
   }
 
   const toggleDifficulty = (difficulty: string) => {
-    const newDifficulties = selectedDifficulties.includes(difficulty as ProblemDifficulty)
-      ? selectedDifficulties.filter((d) => d !== difficulty)
-      : [...selectedDifficulties, difficulty]
-    updateParams({ difficulties: newDifficulties.length > 0 ? newDifficulties.join(',') : null })
+    if (difficulties.includes(difficulty)) {
+      setDifficulties(difficulties.filter((d) => d !== difficulty))
+    } else {
+      setDifficulties([...difficulties, difficulty])
+    }
   }
 
   const toggleTag = (tagId: number) => {
-    const newTags = selectedTags.includes(tagId)
-      ? selectedTags.filter((id) => id !== tagId)
-      : [...selectedTags, tagId]
-    updateParams({ tags: newTags.length > 0 ? newTags.join(',') : null })
+    const tagIdStr = String(tagId)
+    if (tagIds.includes(tagIdStr)) {
+      setTagIds(tagIds.filter((id) => id !== tagIdStr))
+    } else {
+      setTagIds([...tagIds, tagIdStr])
+    }
   }
 
   const clearFilters = () => {
-    router.push('/problems', { scroll: false })
+    setQuery('')
+    setSort('LATEST')
+    setDifficulties([])
+    setTagIds([])
   }
 
-  const filterCount = selectedDifficulties.length + selectedTags.length
+  const filterCount = difficulties.length + tagIds.length
   const hasActiveFilters = query || filterCount > 0 || sort !== 'LATEST'
 
   return (
@@ -154,10 +147,10 @@ export function ProblemsContent() {
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">문제</h1>
         <div className="flex items-center gap-2">
-          <SearchInput defaultValue={query} onSearch={handleQueryChange} />
+          <SearchInput value={query} onChange={setQuery} />
           <select
             value={sort}
-            onChange={(e) => handleSortChange(e.target.value as ProblemSort)}
+            onChange={(e) => setSort(e.target.value as ProblemSort)}
             className="h-9 rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-primary"
           >
             {SORT_OPTIONS.map((opt) => (
@@ -194,9 +187,7 @@ export function ProblemsContent() {
               <div className="space-y-2">
                 {DIFFICULTY_TIERS.map((tier) => {
                   const tierDifficulties = [5, 4, 3, 2, 1].map((n) => `${tier}_${n}`)
-                  const selectedCount = tierDifficulties.filter((d) =>
-                    selectedDifficulties.includes(d as ProblemDifficulty)
-                  ).length
+                  const selectedCount = tierDifficulties.filter((d) => difficulties.includes(d)).length
                   const allSelected = selectedCount === 5
 
                   return (
@@ -214,7 +205,7 @@ export function ProblemsContent() {
                       <div className="flex gap-1">
                         {[5, 4, 3, 2, 1].map((level) => {
                           const difficulty = `${tier}_${level}`
-                          const isSelected = selectedDifficulties.includes(difficulty as ProblemDifficulty)
+                          const isSelected = difficulties.includes(difficulty)
                           return (
                             <button
                               key={level}
@@ -246,7 +237,7 @@ export function ProblemsContent() {
                       onClick={() => toggleTag(tag.id)}
                       className={cn(
                         'rounded-full border px-3 py-1 text-sm transition-colors',
-                        selectedTags.includes(tag.id)
+                        tagIds.includes(String(tag.id))
                           ? 'border-primary bg-primary/10 text-primary'
                           : 'border-border text-muted-foreground hover:border-primary/50'
                       )}
@@ -349,17 +340,21 @@ export function ProblemsContent() {
   )
 }
 
-function SearchInput({ defaultValue, onSearch }: { defaultValue: string; onSearch: (value: string) => void }) {
-  const [value, setValue] = useState(defaultValue)
+function SearchInput({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const [localValue, setLocalValue] = useState(value)
+
+  useEffect(() => {
+    setLocalValue(value)
+  }, [value])
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (value !== defaultValue) {
-        onSearch(value)
+      if (localValue !== value) {
+        onChange(localValue)
       }
     }, 300)
     return () => clearTimeout(timer)
-  }, [value, defaultValue, onSearch])
+  }, [localValue, value, onChange])
 
   return (
     <div className="relative">
@@ -367,8 +362,8 @@ function SearchInput({ defaultValue, onSearch }: { defaultValue: string; onSearc
       <input
         type="text"
         placeholder="검색"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
+        value={localValue}
+        onChange={(e) => setLocalValue(e.target.value)}
         className="h-9 w-48 rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
       />
     </div>
