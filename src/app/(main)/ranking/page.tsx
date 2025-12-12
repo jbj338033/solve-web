@@ -22,12 +22,12 @@ export default function RankingPage() {
     <div className="mx-auto max-w-6xl px-6 py-10">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">랭킹</h1>
-        <div className="flex gap-1 rounded-lg border border-border p-1">
+        <div className="flex rounded-lg border border-border p-1">
           <button
             onClick={() => setType('problem')}
             className={cn(
               'rounded-md px-3 py-1.5 text-sm transition-colors',
-              type === 'problem' ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted/50'
+              type === 'problem' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50'
             )}
           >
             문제
@@ -36,7 +36,7 @@ export default function RankingPage() {
             onClick={() => setType('contest')}
             className={cn(
               'rounded-md px-3 py-1.5 text-sm transition-colors',
-              type === 'contest' ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted/50'
+              type === 'contest' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50'
             )}
           >
             대회
@@ -57,7 +57,7 @@ export default function RankingPage() {
                 </tr>
               </thead>
               <tbody>
-                {[...Array(20)].map((_, i) => (
+                {[...Array(10)].map((_, i) => (
                   <tr key={i} className="border-b border-border last:border-0">
                     <td className="px-4 py-3.5">
                       <div className="h-4 w-6 animate-pulse rounded bg-muted" />

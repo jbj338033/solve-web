@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import {
@@ -18,7 +18,6 @@ export default function SubmissionsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasNext, setHasNext] = useState(false)
-  const observerRef = useRef<HTMLDivElement>(null)
 
   const loadSubmissions = useCallback(async (cursor?: string) => {
     try {
@@ -39,7 +38,6 @@ export default function SubmissionsPage() {
     loadSubmissions().finally(() => setIsLoading(false))
   }, [loadSubmissions])
 
-  // WebSocket 실시간 업데이트
   useEffect(() => {
     const unsubscribe = submissionApi.subscribeSubmissions((type, data) => {
       if (type === 'NEW') {
@@ -50,27 +48,15 @@ export default function SubmissionsPage() {
         )
       }
     })
-
     return unsubscribe
   }, [])
 
-  // 무한스크롤
-  useEffect(() => {
-    if (!observerRef.current || !hasNext) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isLoadingMore && submissions.length > 0) {
-          setIsLoadingMore(true)
-          loadSubmissions(submissions[submissions.length - 1].id).finally(() => setIsLoadingMore(false))
-        }
-      },
-      { threshold: 0.1 }
-    )
-
-    observer.observe(observerRef.current)
-    return () => observer.disconnect()
-  }, [hasNext, isLoadingMore, submissions, loadSubmissions])
+  const loadMore = async () => {
+    if (!hasNext || isLoadingMore || submissions.length === 0) return
+    setIsLoadingMore(true)
+    await loadSubmissions(submissions[submissions.length - 1].id)
+    setIsLoadingMore(false)
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -82,7 +68,7 @@ export default function SubmissionsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-muted-foreground">문제</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">문제</th>
                   <th className="w-24 whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-muted-foreground">사용자</th>
                   <th className="w-28 whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-muted-foreground">결과</th>
                   <th className="w-20 whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-muted-foreground">시간</th>
@@ -112,7 +98,7 @@ export default function SubmissionsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
-                    <th className="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-muted-foreground">문제</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">문제</th>
                     <th className="w-24 whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-muted-foreground">사용자</th>
                     <th className="w-28 whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-muted-foreground">결과</th>
                     <th className="w-20 whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-muted-foreground">시간</th>
@@ -156,13 +142,21 @@ export default function SubmissionsPage() {
             </div>
 
             {hasNext && (
-              <div ref={observerRef} className="mt-6 flex justify-center">
-                {isLoadingMore && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="size-4 animate-spin" />
-                    로딩중...
-                  </div>
-                )}
+              <div className="mt-6 text-center">
+                <button
+                  onClick={loadMore}
+                  disabled={isLoadingMore}
+                  className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted/50 disabled:opacity-50"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      로딩중...
+                    </>
+                  ) : (
+                    '더보기'
+                  )}
+                </button>
               </div>
             )}
           </>
@@ -178,15 +172,27 @@ export default function SubmissionsPage() {
 
 function ResultBadge({ submission }: { submission: Submission }) {
   if (submission.status === 'PENDING') {
-    return <span className="flex items-center gap-1.5 text-sm text-muted-foreground"><Loader2 className="size-3.5 animate-spin" />대기 중</span>
+    return (
+      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Loader2 className="size-3.5 animate-spin" />
+        대기 중
+      </span>
+    )
   }
   if (submission.status === 'JUDGING') {
-    return <span className="flex items-center gap-1.5 text-sm text-primary"><Loader2 className="size-3.5 animate-spin" />채점 중</span>
+    return (
+      <span className="flex items-center gap-1.5 text-sm text-primary">
+        <Loader2 className="size-3.5 animate-spin" />
+        채점 중
+      </span>
+    )
   }
   if (submission.result) {
-    return <span className={cn('text-sm font-medium', RESULT_STYLES[submission.result])}>{RESULT_LABELS[submission.result]}</span>
+    return (
+      <span className={cn('text-sm font-medium', RESULT_STYLES[submission.result])}>
+        {RESULT_LABELS[submission.result]}
+      </span>
+    )
   }
   return <span className="text-sm text-muted-foreground">-</span>
 }
-
-
