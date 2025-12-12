@@ -290,7 +290,7 @@ export function ProblemsContent() {
                   {problems.map((problem) => (
                     <tr
                       key={problem.id}
-                      onClick={() => router.push(`/problems/${problem.id}`)}
+                      onClick={() => router.push(`/problems/${problem.number}`)}
                       className="cursor-pointer border-b border-border last:border-0 hover:bg-muted/50"
                     >
                       <td className="px-4 py-3.5">

@@ -11,6 +11,8 @@ export type ProblemType = 'STANDARD' | 'SPECIAL_JUDGE' | 'INTERACTIVE'
 
 export type ProblemSort = 'LATEST' | 'DIFFICULTY_ASC' | 'DIFFICULTY_DESC' | 'ACCEPT_RATE_DESC' | 'SUBMISSIONS_DESC' | 'ACCEPTED_USERS_DESC'
 
+export type ProblemStatus = 'SOLVED' | 'ATTEMPTED'
+
 export interface ProblemAuthor {
   id: string
   username: string
@@ -23,17 +25,16 @@ export interface ProblemTag {
   name: string
 }
 
-export type ProblemStatus = 'SOLVED' | 'ATTEMPTED'
-
 export interface Problem {
   id: string
+  number: number
   title: string
   difficulty: ProblemDifficulty
   author: ProblemAuthor
   type: ProblemType
+  status: ProblemStatus | null
   createdAt: string
   isPublic: boolean
-  status: ProblemStatus | null
 }
 
 export interface ProblemDetail extends Problem {

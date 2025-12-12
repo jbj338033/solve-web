@@ -263,7 +263,7 @@ export default function ContestDetailPage({ params }: Props) {
                     .map((problem) => (
                       <tr
                         key={problem.id}
-                        onClick={() => canSolve && router.push(`/contests/${contestId}/problems/${problem.id}`)}
+                        onClick={() => canSolve && router.push(`/contests/${contestId}/problems/${problem.number}`)}
                         className={cn(
                           'border-b border-border last:border-0',
                           canSolve && 'cursor-pointer hover:bg-muted/50'

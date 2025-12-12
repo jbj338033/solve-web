@@ -3,15 +3,15 @@ import { problemApi } from '@/entities/problem'
 import { SolveWorkspace } from '@/widgets/solve-workspace'
 
 interface Props {
-  params: Promise<{ problemId: string }>
+  params: Promise<{ problemNumber: string }>
 }
 
 export default async function ProblemSolvePage({ params }: Props) {
-  const { problemId } = await params
+  const { problemNumber } = await params
 
   let problem
   try {
-    problem = await problemApi.getProblem(problemId)
+    problem = await problemApi.getProblem(Number(problemNumber))
   } catch {
     notFound()
   }

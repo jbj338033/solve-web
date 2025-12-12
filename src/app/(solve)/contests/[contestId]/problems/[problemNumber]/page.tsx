@@ -4,30 +4,28 @@ import { contestApi, getContestStatus } from '@/entities/contest'
 import { SolveWorkspace } from '@/widgets/solve-workspace'
 
 interface Props {
-  params: Promise<{ contestId: string; problemId: string }>
+  params: Promise<{ contestId: string; problemNumber: string }>
 }
 
 export default async function ContestProblemSolvePage({ params }: Props) {
-  const { contestId, problemId } = await params
+  const { contestId, problemNumber } = await params
 
   let contest
   let problem
 
   try {
     contest = await contestApi.getContest(contestId)
-    problem = await problemApi.getProblem(problemId)
+    problem = await problemApi.getProblem(Number(problemNumber))
   } catch {
     notFound()
   }
 
-  // Check if contest is ongoing
   const status = getContestStatus(contest.startAt, contest.endAt)
   if (status !== 'ONGOING') {
     notFound()
   }
 
-  // Check if problem is part of contest
-  const contestProblem = contest.problems.find((p) => p.id === problemId)
+  const contestProblem = contest.problems.find((p) => p.number === Number(problemNumber))
   if (!contestProblem) {
     notFound()
   }

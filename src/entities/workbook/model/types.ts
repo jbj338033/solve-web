@@ -9,6 +9,7 @@ export interface WorkbookAuthor {
 
 export interface WorkbookProblem {
   id: string
+  number: number
   title: string
   difficulty: ProblemDifficulty
   type: ProblemType

@@ -49,15 +49,15 @@ export const problemApi = {
   getProblems: (params?: ProblemFilterParams) =>
     api.get<CursorPage<Problem>>('/problems', { params }),
 
-  getProblem: (problemId: string) =>
-    api.get<ProblemDetail>(`/problems/${problemId}`),
+  getProblem: (problemNumber: number) =>
+    api.get<ProblemDetail>(`/problems/${problemNumber}`),
 
   createProblem: (data: CreateProblemRequest) =>
     api.post<ProblemDetail>('/problems', data),
 
-  updateProblem: (problemId: string, data: UpdateProblemRequest) =>
-    api.patch<ProblemDetail>(`/problems/${problemId}`, data),
+  updateProblem: (problemNumber: number, data: UpdateProblemRequest) =>
+    api.patch<ProblemDetail>(`/problems/${problemNumber}`, data),
 
-  deleteProblem: (problemId: string) =>
-    api.delete<void>(`/problems/${problemId}`),
+  deleteProblem: (problemNumber: number) =>
+    api.delete<void>(`/problems/${problemNumber}`),
 }

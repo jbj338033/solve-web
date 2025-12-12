@@ -27,6 +27,7 @@ export interface ContestProblem {
   order: number
   score: number
   id: string
+  number: number
   title: string
   difficulty: ProblemDifficulty
 }

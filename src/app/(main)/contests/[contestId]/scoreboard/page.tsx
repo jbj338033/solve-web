@@ -144,7 +144,7 @@ export default function ContestScoreboardPage({ params }: Props) {
                       className="w-20 whitespace-nowrap px-3 py-3 text-center text-sm font-medium text-muted-foreground"
                     >
                       <Link
-                        href={`/contests/${contestId}/problems/${problem.id}`}
+                        href={`/contests/${contestId}/problems/${problem.number}`}
                         className="hover:text-foreground"
                       >
                         {String.fromCharCode(65 + problem.order)}
