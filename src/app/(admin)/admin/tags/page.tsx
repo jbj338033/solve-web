@@ -1,18 +1,29 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { Plus, Loader2, Trash2, Pencil, X, Check } from 'lucide-react'
 import { adminTagApi, type AdminTag } from '@/features/admin'
-import { formatDateTime } from '@/shared/lib'
+import { formatDateTime, tagFormSchema, type TagFormData } from '@/shared/lib'
 
 export default function AdminTagsPage() {
   const [tags, setTags] = useState<AdminTag[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [newTagName, setNewTagName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingName, setEditingName] = useState('')
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<TagFormData>({
+    resolver: zodResolver(tagFormSchema),
+    defaultValues: { name: '' },
+  })
 
   const loadTags = useCallback(async () => {
     try {
@@ -29,12 +40,11 @@ export default function AdminTagsPage() {
     loadTags()
   }, [loadTags])
 
-  const handleCreate = async () => {
-    if (!newTagName.trim()) return
+  const onSubmit = async (data: TagFormData) => {
     setIsCreating(true)
     try {
-      await adminTagApi.createTag({ name: newTagName.trim() })
-      setNewTagName('')
+      await adminTagApi.createTag({ name: data.name.trim() })
+      reset({ name: '' })
       toast.success('태그가 생성되었습니다')
       loadTags()
     } catch {
@@ -42,6 +52,10 @@ export default function AdminTagsPage() {
     } finally {
       setIsCreating(false)
     }
+  }
+
+  const handleCreate = () => {
+    handleSubmit(onSubmit)()
   }
 
   const handleUpdate = async (tagId: number) => {
@@ -85,14 +99,13 @@ export default function AdminTagsPage() {
         <input
           type="text"
           placeholder="새 태그 이름"
-          value={newTagName}
-          onChange={(e) => setNewTagName(e.target.value)}
+          {...register('name')}
           onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
           className="h-9 flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
         />
         <button
           onClick={handleCreate}
-          disabled={isCreating || !newTagName.trim()}
+          disabled={isCreating || isSubmitting}
           className="flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
           {isCreating ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
