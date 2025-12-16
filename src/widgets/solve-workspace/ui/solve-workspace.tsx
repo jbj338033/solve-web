@@ -176,7 +176,7 @@ export function SolveWorkspace({ problem, contestId }: Props) {
     }
   }, [stdinInput])
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!code.trim()) {
       toast.error('코드를 입력해주세요')
       return
@@ -189,47 +189,44 @@ export function SolveWorkspace({ problem, contestId }: Props) {
 
     setSubmit({ status: 'submitting', score: null, result: null, message: null })
 
-    try {
-      const result = contestId
-        ? await submissionApi.createContestSubmission(contestId, problem.id, { language: LANGUAGE_MAP[language], code })
-        : await submissionApi.createSubmission(problem.id, { language: LANGUAGE_MAP[language], code })
-
-      setSubmit({ status: 'judging', score: 0, result: null, message: null })
-
-      const unsubscribe = submissionApi.subscribeSubmissions(
-        (type, data) => {
-          if (data.id !== result.id) return
-
-          if (data.status === 'JUDGING' && data.score !== null) {
-            setSubmit((prev) => ({ ...prev, score: data.score }))
-          }
-
-          if (data.status === 'COMPLETED') {
-            unsubscribe()
-            const isSuccess = data.result === 'ACCEPTED'
-            setSubmit({
-              status: isSuccess ? 'success' : 'failed',
-              score: data.score,
-              result: data.result,
-              message: data.result ? RESULT_LABELS[data.result] : null,
-            })
-            hideStatusBarLater()
-          }
+    const unsubscribe = submissionApi.judge(
+      {
+        problemId: problem.id,
+        contestId,
+        language: LANGUAGE_MAP[language],
+        code,
+      },
+      {
+        onCreated: () => {
+          setSubmit({ status: 'judging', score: 0, result: null, message: null })
         },
-        () => {
-          setSubmit({ status: 'failed', score: null, result: null, message: '연결 실패' })
+        onProgress: (data) => {
+          setSubmit((prev) => ({ ...prev, score: data.progress }))
+        },
+        onComplete: (data) => {
+          const isSuccess = data.result === 'ACCEPTED'
+          setSubmit({
+            status: isSuccess ? 'success' : 'failed',
+            score: data.score,
+            result: data.result,
+            message: RESULT_LABELS[data.result],
+          })
           hideStatusBarLater()
-        }
-      )
-    } catch (err) {
-      setSubmit({
-        status: 'failed',
-        score: null,
-        result: null,
-        message: err instanceof Error ? err.message : '제출 실패',
-      })
-      hideStatusBarLater()
-    }
+        },
+        onError: (message) => {
+          setSubmit({
+            status: 'failed',
+            score: null,
+            result: null,
+            message,
+          })
+          hideStatusBarLater()
+        },
+      }
+    )
+
+    // cleanup on unmount
+    return unsubscribe
   }
 
   const isSubmitInProgress = submit.status === 'submitting' || submit.status === 'judging'
