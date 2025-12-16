@@ -1,5 +1,12 @@
 export { submissionApi } from './api/submission-api'
-export type { CreateSubmissionRequest } from './api/submission-api'
+export type {
+  SubmissionFilterParams,
+  JudgeInitData,
+  JudgeCreatedData,
+  JudgeProgressData,
+  JudgeCompleteData,
+  JudgeCallbacks,
+} from './api/submission-api'
 export {
   LANGUAGE_MAP,
   LANGUAGE_LABELS,
