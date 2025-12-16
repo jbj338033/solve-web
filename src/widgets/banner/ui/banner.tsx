@@ -35,7 +35,7 @@ export function Banner() {
   }
 
   if (banners.length === 0) {
-    return null
+    return <div className="h-56 bg-muted sm:h-72 md:h-80 lg:h-96" />
   }
 
   return (
