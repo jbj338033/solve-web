@@ -1,3 +1,5 @@
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY'
+
 export interface User {
   id: number
   username: string
@@ -9,7 +11,7 @@ export interface User {
   problemRating: number
   contestRating: number
   role: 'USER' | 'ADMIN'
-  oauthProviders: ('GOOGLE' | 'GITHUB')[]
+  oauthProviders: OAuthProvider[]
   createdAt: string
 }
 
@@ -42,7 +44,36 @@ export interface UserProfile {
   currentStreak: number
   maxStreak: number
   banner: BannerInfo | null
+  country: string | null
+  birthDate: string | null
+  gender: Gender | null
+  genderOther: string | null
+  pronouns: string | null
   createdAt: string
+}
+
+export interface UserSettings {
+  country: string | null
+  countryVisible: boolean
+  birthDate: string | null
+  birthDateVisible: boolean
+  gender: Gender | null
+  genderOther: string | null
+  genderVisible: boolean
+  pronouns: string | null
+  pronounsVisible: boolean
+}
+
+export interface UpdateUserSettingsRequest {
+  country?: string | null
+  countryVisible?: boolean
+  birthDate?: string | null
+  birthDateVisible?: boolean
+  gender?: Gender | null
+  genderOther?: string | null
+  genderVisible?: boolean
+  pronouns?: string | null
+  pronounsVisible?: boolean
 }
 
 export interface UserStats {
