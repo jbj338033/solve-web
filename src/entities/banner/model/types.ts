@@ -4,3 +4,11 @@ export interface Banner {
   description: string
   imageUrl: string
 }
+
+export interface AcquiredBanner extends Banner {
+  acquiredAt: string
+}
+
+export interface SelectBannerRequest {
+  id: number | null
+}

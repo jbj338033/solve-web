@@ -1,2 +1,2 @@
 export { bannerApi } from './api/banner-api'
-export type { Banner } from './model/types'
+export type { Banner, AcquiredBanner, SelectBannerRequest } from './model/types'
