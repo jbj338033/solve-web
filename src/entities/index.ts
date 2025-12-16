@@ -14,9 +14,12 @@ export { ProblemItem, ProblemItemSkeleton } from './problem'
 export { userApi } from './user'
 export { TIER_NAMES, TIER_COLORS, getTierInfo } from './user'
 export type {
+  Gender,
   User,
   Tier,
   UserProfile,
+  UserSettings,
+  UpdateUserSettingsRequest,
   UserStats,
   TagStat,
   UserRatingHistory,
@@ -48,7 +51,12 @@ export { ContestCard, ContestCardSkeleton } from './contest'
 export { submissionApi } from './submission'
 export { LANGUAGE_MAP, LANGUAGE_LABELS, RESULT_LABELS, RESULT_STYLES } from './submission'
 export type {
-  CreateSubmissionRequest,
+  SubmissionFilterParams,
+  JudgeInitData,
+  JudgeCreatedData,
+  JudgeProgressData,
+  JudgeCompleteData,
+  JudgeCallbacks,
   Submission,
   SubmissionDetail,
   Language,
@@ -66,4 +74,4 @@ export type { CreateWorkbookRequest, UpdateWorkbookRequest, Workbook, WorkbookDe
 
 // Banner
 export { bannerApi } from './banner'
-export type { Banner } from './banner'
+export type { Banner, AcquiredBanner, SelectBannerRequest } from './banner'
