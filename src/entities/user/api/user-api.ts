@@ -1,7 +1,35 @@
 import { api } from '@/shared/api'
-import type { UserProfile, UserStats, UserRatingHistory, UserActivity, UserRank, RatingType } from '../model/types'
+import type {
+  User,
+  UserProfile,
+  UserSettings,
+  UpdateUserSettingsRequest,
+  UserStats,
+  UserRatingHistory,
+  UserActivity,
+  UserRank,
+  RatingType,
+  OAuthProvider,
+} from '../model/types'
+
+export interface OAuthLinkRequest {
+  credential: string
+}
 
 export const userApi = {
+  getMe: () => api.get<User>('/users/me'),
+
+  getMySettings: () => api.get<UserSettings>('/users/me/settings'),
+
+  updateMySettings: (data: UpdateUserSettingsRequest) =>
+    api.patch<UserSettings>('/users/me/settings', data),
+
+  linkOAuth: (provider: OAuthProvider, data: OAuthLinkRequest) =>
+    api.post<User>(`/users/me/oauth/${provider.toLowerCase()}`, data),
+
+  unlinkOAuth: (provider: OAuthProvider) =>
+    api.delete<User>(`/users/me/oauth/${provider.toLowerCase()}`),
+
   getProfile: (username: string) =>
     api.get<UserProfile>(`/users/${username}`),
 
