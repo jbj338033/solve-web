@@ -7,7 +7,13 @@ import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Loader2, Save } from 'lucide-react'
-import { adminProblemApi, adminTagApi, ProblemForm } from '@/features/admin'
+import {
+  adminProblemApi,
+  adminTagApi,
+  ProblemForm,
+  ProblemImport,
+  type ProblemImportResult,
+} from '@/features/admin'
 import {
   problemFormSchema,
   problemFormDefaultValues,
@@ -66,6 +72,29 @@ export default function AdminProblemNewPage() {
     })()
   }
 
+  const handleImport = (data: ProblemImportResult) => {
+    methods.reset({
+      title: data.problem.title,
+      description: data.problem.description,
+      inputFormat: data.problem.inputFormat,
+      outputFormat: data.problem.outputFormat,
+      difficulty: data.problem.difficulty,
+      timeLimit: data.problem.timeLimit,
+      memoryLimit: data.problem.memoryLimit,
+      type: data.problem.type,
+      isPublic: data.problem.isPublic,
+      examples:
+        data.problem.examples.length > 0
+          ? data.problem.examples
+          : [{ input: '', output: '' }],
+      testcases: data.testcases,
+      tagIds: data.problem.tags
+        .map((name) => tags.find((t) => t.name === name)?.id)
+        .filter((id): id is number => id !== undefined),
+    })
+    toast.success('문제를 불러왔습니다')
+  }
+
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -91,6 +120,10 @@ export default function AdminProblemNewPage() {
           {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
           저장
         </button>
+      </div>
+
+      <div className="mb-6">
+        <ProblemImport onImport={handleImport} />
       </div>
 
       <FormProvider {...methods}>

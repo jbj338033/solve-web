@@ -11,6 +11,7 @@ import {
   adminProblemApi,
   adminTagApi,
   ProblemForm,
+  ProblemExport,
   type AdminProblemDetail,
 } from '@/features/admin'
 import {
@@ -127,14 +128,17 @@ export default function AdminProblemDetailPage({ params }: Props) {
           </Link>
           <h1 className="text-xl font-semibold">문제 수정</h1>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
-          {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-          저장
-        </button>
+        <div className="flex items-center gap-4">
+          <ProblemExport tags={tags} />
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            저장
+          </button>
+        </div>
       </div>
 
       <FormProvider {...methods}>

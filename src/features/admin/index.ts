@@ -32,3 +32,13 @@ export type {
 
 export { ProblemForm } from './ui'
 export { ContestForm } from './ui'
+export { ProblemImport } from './ui'
+export { ProblemExport } from './ui'
+
+export {
+  parseProblemZip,
+  generateProblemZip,
+  downloadProblemZip,
+  type ProblemImportResult,
+  type ProblemZipData,
+} from './lib'
