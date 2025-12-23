@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
-import { useFormContext } from 'react-hook-form'
 import { generateProblemZip, downloadProblemZip } from '../lib'
 import type { ProblemFormData } from '@/shared/lib/schemas/problem'
 
@@ -13,18 +12,18 @@ interface Tag {
 
 interface Props {
   tags: Tag[]
+  getFormValues: () => ProblemFormData
   filename?: string
 }
 
-export function ProblemExport({ tags, filename = 'problem.zip' }: Props) {
-  const { getValues } = useFormContext<ProblemFormData>()
+export function ProblemExport({ tags, getFormValues, filename = 'problem.zip' }: Props) {
   const [includeTestcases, setIncludeTestcases] = useState(true)
   const [isExporting, setIsExporting] = useState(false)
 
   const handleExport = () => {
     setIsExporting(true)
     try {
-      const formData = getValues()
+      const formData = getFormValues()
       const tagNames = formData.tagIds
         .map((id) => tags.find((t) => t.id === id)?.name)
         .filter((name): name is string => !!name)

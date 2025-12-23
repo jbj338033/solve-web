@@ -129,7 +129,7 @@ export default function AdminProblemDetailPage({ params }: Props) {
           <h1 className="text-xl font-semibold">문제 수정</h1>
         </div>
         <div className="flex items-center gap-4">
-          <ProblemExport tags={tags} />
+          <ProblemExport tags={tags} getFormValues={methods.getValues} />
           <button
             onClick={handleSave}
             disabled={isSaving}
