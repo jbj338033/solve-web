@@ -25,9 +25,7 @@ export function useAuth() {
     if (refreshToken) {
       try {
         await authApi.logout(refreshToken)
-      } catch {
-        // ignore
-      }
+      } catch {}
     }
     clearAuth()
   }, [refreshToken, clearAuth])

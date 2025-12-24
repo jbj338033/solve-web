@@ -74,7 +74,6 @@ export function ActivityGraph({ activities, startDate, endDate }: ActivityGraphP
   return (
     <div className="relative w-full">
       <div className="flex gap-1">
-        {/* Day labels */}
         <div className="flex shrink-0 flex-col justify-between py-[1px] text-[10px] text-muted-foreground">
           {DAY_LABELS.map((label, i) => (
             <div key={i} className="flex h-0 flex-1 items-center">
@@ -83,7 +82,6 @@ export function ActivityGraph({ activities, startDate, endDate }: ActivityGraphP
           ))}
         </div>
 
-        {/* Grid */}
         <div
           className="grid flex-1 gap-[3px]"
           style={{ gridTemplateColumns: `repeat(${totalWeeks}, 1fr)` }}
@@ -125,7 +123,6 @@ export function ActivityGraph({ activities, startDate, endDate }: ActivityGraphP
         </div>
       </div>
 
-      {/* Legend */}
       <div className="mt-2 flex items-center justify-end gap-2 text-xs text-muted-foreground">
         <span>적음</span>
         <div className="flex gap-[3px]">
@@ -138,7 +135,6 @@ export function ActivityGraph({ activities, startDate, endDate }: ActivityGraphP
         <span>많음</span>
       </div>
 
-      {/* Tooltip */}
       {tooltip && (
         <div
           className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md border border-border bg-popover px-3 py-2 text-sm shadow-md"
