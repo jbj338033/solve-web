@@ -49,9 +49,7 @@ export function MarkdownEditor({ value, onChange, placeholder, rows = 6, classNa
       try {
         const url = await fileApi.upload(file, 'PROBLEM_IMAGE')
         insertTextAtCursor(`![](${url})`)
-      } catch {
-        // 업로드 실패 시 무시
-      } finally {
+      } catch {} finally {
         setIsUploading(false)
       }
     },

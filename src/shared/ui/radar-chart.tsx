@@ -73,7 +73,6 @@ export function RadarChart({ data, size = 280 }: RadarChartProps) {
   return (
     <div className="flex justify-center">
       <svg width={size} height={size}>
-        {/* Grid polygons */}
         {gridLines.polygons.map((pts, i) => (
           <polygon
             key={i}
@@ -85,7 +84,6 @@ export function RadarChart({ data, size = 280 }: RadarChartProps) {
           />
         ))}
 
-        {/* Axes */}
         {gridLines.axes.map((axis, i) => (
           <line
             key={i}
@@ -99,7 +97,6 @@ export function RadarChart({ data, size = 280 }: RadarChartProps) {
           />
         ))}
 
-        {/* Data polygon */}
         <polygon
           points={polygonPoints}
           fill="currentColor"
@@ -109,7 +106,6 @@ export function RadarChart({ data, size = 280 }: RadarChartProps) {
           className="text-primary"
         />
 
-        {/* Data points */}
         {points.map((p, i) => (
           <circle
             key={i}
@@ -121,7 +117,6 @@ export function RadarChart({ data, size = 280 }: RadarChartProps) {
           />
         ))}
 
-        {/* Labels */}
         {labelPositions.map((pos, i) => (
           <text
             key={i}

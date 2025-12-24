@@ -4,16 +4,16 @@ import { useState } from 'react'
 import { cn } from '../lib'
 
 const COLORS = [
-  '#3b82f6', // blue
-  '#22c55e', // green
-  '#f59e0b', // amber
-  '#ef4444', // red
-  '#8b5cf6', // violet
-  '#ec4899', // pink
-  '#14b8a6', // teal
-  '#f97316', // orange
-  '#6366f1', // indigo
-  '#84cc16', // lime
+  '#3b82f6',
+  '#22c55e',
+  '#f59e0b',
+  '#ef4444',
+  '#8b5cf6',
+  '#ec4899',
+  '#14b8a6',
+  '#f97316',
+  '#6366f1',
+  '#84cc16',
 ]
 
 export interface DonutChartData {
@@ -58,7 +58,6 @@ export function DonutChart({ data, size = 200, strokeWidth = 32 }: DonutChartPro
 
   return (
     <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-      {/* Chart */}
       <div className="relative shrink-0" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
           {segments.map((segment, i) => (
@@ -81,14 +80,12 @@ export function DonutChart({ data, size = 200, strokeWidth = 32 }: DonutChartPro
             />
           ))}
         </svg>
-        {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-3xl font-bold">{total}</span>
           <span className="text-sm text-muted-foreground">총 문제</span>
         </div>
       </div>
 
-      {/* Legend */}
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 sm:flex-col sm:gap-2">
         {segments.map((segment, i) => (
           <div
