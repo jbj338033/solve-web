@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import { FileText, Trophy, BookOpen, Tag, Flag, LogOut } from 'lucide-react'
+import { FileText, Trophy, BookOpen, Tag, Flag, LogOut, ClipboardCheck } from 'lucide-react'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/shared/lib'
 
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/admin/workbooks', label: '문제집', icon: BookOpen },
   { href: '/admin/tags', label: '태그', icon: Tag },
   { href: '/admin/banners', label: '배너', icon: Flag },
+  { href: '/admin/reviews', label: '검수', icon: ClipboardCheck },
 ]
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
