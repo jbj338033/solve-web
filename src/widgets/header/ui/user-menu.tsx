@@ -62,6 +62,13 @@ export function UserMenu({ user }: UserMenuProps) {
               프로필
             </Link>
             <Link
+              href="/my/problems"
+              onClick={() => setIsOpen(false)}
+              className="block px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              내 문제
+            </Link>
+            <Link
               href="/settings"
               onClick={() => setIsOpen(false)}
               className="block px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"

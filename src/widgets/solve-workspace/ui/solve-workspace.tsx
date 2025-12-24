@@ -140,9 +140,7 @@ export function SolveWorkspace({ problem, contestId }: Props) {
             ws.close()
             break
         }
-      } catch {
-        // ignore parse errors
-      }
+      } catch {}
     }
 
     ws.onerror = () => {
@@ -225,7 +223,6 @@ export function SolveWorkspace({ problem, contestId }: Props) {
       }
     )
 
-    // cleanup on unmount
     return unsubscribe
   }
 
