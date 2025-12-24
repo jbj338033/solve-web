@@ -49,9 +49,10 @@ interface Tag {
 
 interface Props {
   tags: Tag[]
+  showTestcases?: boolean
 }
 
-export function ProblemForm({ tags }: Props) {
+export function ProblemForm({ tags, showTestcases = true }: Props) {
   const { register, control, watch, setValue, getValues } = useFormContext<ProblemFormData>()
 
   const {
@@ -68,14 +69,14 @@ export function ProblemForm({ tags }: Props) {
   } = useFieldArray({ control, name: 'testcases' })
 
   const isPublic = watch('isPublic')
-  const tagIds = watch('tagIds')
+  const tagIds = watch('tagIds') ?? []
 
   const toggleTag = (tagId: number) => {
-    const current = getValues('tagIds')
+    const current = getValues('tagIds') ?? []
     if (current.includes(tagId)) {
-      setValue('tagIds', current.filter((id) => id !== tagId))
+      setValue('tagIds', current.filter((id) => id !== tagId), { shouldDirty: true })
     } else {
-      setValue('tagIds', [...current, tagId])
+      setValue('tagIds', [...current, tagId], { shouldDirty: true })
     }
   }
 
@@ -291,64 +292,66 @@ export function ProblemForm({ tags }: Props) {
         </div>
       </FormSection>
 
-      <FormSection title="테스트케이스" description="채점에 사용되는 테스트케이스입니다">
-        <div className="space-y-4">
-          <TestcaseUpload onUpload={handleTestcaseUpload} />
+      {showTestcases && (
+        <FormSection title="테스트케이스" description="채점에 사용되는 테스트케이스입니다">
+          <div className="space-y-4">
+            <TestcaseUpload onUpload={handleTestcaseUpload} />
 
-          {testcaseFields.length > 0 && (
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-xs text-muted-foreground">
-                {testcaseFields.length}개의 테스트케이스
-              </span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-          )}
-
-          {testcaseFields.map((field, index) => (
-            <div key={field.id} className="relative rounded-lg border border-border bg-muted/20 p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">테스트케이스 {index + 1}</span>
-                <button
-                  type="button"
-                  onClick={() => removeTestcase(index)}
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-red-500"
-                >
-                  <Trash2 className="size-3.5" />
-                  삭제
-                </button>
+            {testcaseFields.length > 0 && (
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-xs text-muted-foreground">
+                  {testcaseFields.length}개의 테스트케이스
+                </span>
+                <div className="h-px flex-1 bg-border" />
               </div>
-              <div className="grid gap-4 lg:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">입력</label>
-                  <textarea
-                    {...register(`testcases.${index}.input`)}
-                    rows={4}
-                    className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-primary"
-                  />
+            )}
+
+            {testcaseFields.map((field, index) => (
+              <div key={field.id} className="relative rounded-lg border border-border bg-muted/20 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">테스트케이스 {index + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeTestcase(index)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-red-500"
+                  >
+                    <Trash2 className="size-3.5" />
+                    삭제
+                  </button>
                 </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">출력</label>
-                  <textarea
-                    {...register(`testcases.${index}.output`)}
-                    rows={4}
-                    className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-primary"
-                  />
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">입력</label>
+                    <textarea
+                      {...register(`testcases.${index}.input`)}
+                      rows={4}
+                      className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">출력</label>
+                    <textarea
+                      {...register(`testcases.${index}.output`)}
+                      rows={4}
+                      className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-primary"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          <button
-            type="button"
-            onClick={() => appendTestcase({ input: '', output: '' })}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-3 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-          >
-            <Plus className="size-4" />
-            테스트케이스 추가
-          </button>
-        </div>
-      </FormSection>
+            <button
+              type="button"
+              onClick={() => appendTestcase({ input: '', output: '' })}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-3 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              <Plus className="size-4" />
+              테스트케이스 추가
+            </button>
+          </div>
+        </FormSection>
+      )}
 
       <FormSection title="태그" description="문제에 해당하는 알고리즘 태그를 선택합니다">
         {tags.length > 0 ? (

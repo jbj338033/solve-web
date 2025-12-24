@@ -1,5 +1,5 @@
 import { api, type CursorPage, type CursorParams } from '@/shared/api'
-import type { ProblemDifficulty, ProblemType } from '@/entities/problem'
+import type { ProblemDifficulty, ProblemType, ProblemSource } from '@/entities/problem'
 import type { AdminProblem, AdminProblemDetail } from '../model/types'
 
 export interface CreateProblemRequest {
@@ -23,6 +23,10 @@ export interface CreateProblemRequest {
 
 export type UpdateProblemRequest = Partial<CreateProblemRequest>
 
+export interface RejectProblemRequest {
+  reason: string
+}
+
 export const adminProblemApi = {
   getProblems: (params?: CursorParams) =>
     api.get<CursorPage<AdminProblem>>('/admin/problems', { params }),
@@ -38,4 +42,13 @@ export const adminProblemApi = {
 
   deleteProblem: (problemId: number) =>
     api.delete<void>(`/admin/problems/${problemId}`),
+
+  getSource: (problemId: number) =>
+    api.get<ProblemSource>(`/admin/problems/${problemId}/source`),
+
+  approveProblem: (problemId: number) =>
+    api.post<void>(`/admin/problems/${problemId}/approve`),
+
+  rejectProblem: (problemId: number, data: RejectProblemRequest) =>
+    api.post<void>(`/admin/problems/${problemId}/reject`, data),
 }

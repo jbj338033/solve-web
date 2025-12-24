@@ -18,7 +18,6 @@ export async function parseProblemZip(
     const buffer = await file.arrayBuffer()
     const unzipped = unzipSync(new Uint8Array(buffer))
 
-    // 1. problem.json 찾기
     const problemJsonEntry = Object.entries(unzipped).find(([name]) => {
       const fileName = name.split('/').pop()
       return fileName === 'problem.json'
@@ -28,7 +27,6 @@ export async function parseProblemZip(
       return { success: false, error: 'problem.json 파일을 찾을 수 없습니다' }
     }
 
-    // 2. JSON 파싱 및 검증
     let problemJson: unknown
     try {
       const text = new TextDecoder().decode(problemJsonEntry[1])
@@ -46,7 +44,6 @@ export async function parseProblemZip(
       }
     }
 
-    // 3. testcases/ 폴더 파싱
     const testcaseFiles = Object.entries(unzipped)
       .filter(([name]) => {
         if (name.startsWith('__MACOSX') || name.startsWith('.')) return false
@@ -61,7 +58,6 @@ export async function parseProblemZip(
         content: new TextDecoder().decode(data),
       }))
 
-    // 4. 테스트케이스 매칭
     const inputFiles = new Map<number, string>()
     const outputFiles = new Map<number, string>()
 

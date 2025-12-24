@@ -1,5 +1,5 @@
 export { adminProblemApi } from './api/problem-api'
-export type { CreateProblemRequest, UpdateProblemRequest } from './api/problem-api'
+export type { CreateProblemRequest, UpdateProblemRequest, RejectProblemRequest } from './api/problem-api'
 
 export { adminContestApi } from './api/contest-api'
 export type { CreateContestRequest, UpdateContestRequest } from './api/contest-api'
@@ -12,6 +12,8 @@ export type { CreateTagRequest, UpdateTagRequest } from './api/tag-api'
 
 export { adminBannerApi } from './api/banner-api'
 export type { CreateBannerRequest, UpdateBannerRequest } from './api/banner-api'
+
+export { adminReviewApi } from './api/review-api'
 
 export type {
   AdminAuthor,
