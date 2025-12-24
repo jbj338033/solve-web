@@ -10,7 +10,6 @@ export interface SubmissionFilterParams extends CursorParams {
   result?: JudgeResult
 }
 
-// WebSocket Judge Types
 export interface JudgeInitData {
   problemId: number
   contestId?: number
@@ -53,6 +52,38 @@ export interface JudgeCallbacks {
   onError?: (message: string) => void
 }
 
+export interface ExecutionInitData {
+  problemId: number
+  language: Language
+  code: string
+}
+
+export interface ExecutionCompleteData {
+  exitCode: number
+  time: number
+  memory: number
+}
+
+export type ExecutionMessageType = 'STDOUT' | 'STDERR' | 'COMPLETE' | 'ERROR'
+
+export interface ExecutionMessage {
+  type: ExecutionMessageType
+  data: string | ExecutionCompleteData
+}
+
+export interface ExecutionCallbacks {
+  onStdout?: (data: string) => void
+  onStderr?: (data: string) => void
+  onComplete?: (data: ExecutionCompleteData) => void
+  onError?: (message: string) => void
+}
+
+export interface ExecutionControls {
+  sendStdin: (input: string) => void
+  kill: () => void
+  close: () => void
+}
+
 export const submissionApi = {
   getSubmissions: (params?: SubmissionFilterParams) =>
     api.get<CursorPage<Submission>>('/submissions', { params }),
@@ -60,10 +91,6 @@ export const submissionApi = {
   getSubmission: (submissionId: number) =>
     api.get<SubmissionDetail>(`/submissions/${submissionId}`),
 
-  /**
-   * WebSocket을 통한 코드 제출 및 채점
-   * @returns unsubscribe 함수
-   */
   judge: (data: JudgeInitData, callbacks: JudgeCallbacks) => {
     const ws = new WebSocket(`${WS_URL}/ws/judge`)
     const { accessToken } = useAuthStore.getState()
@@ -100,9 +127,7 @@ export const submissionApi = {
             ws.close()
             break
         }
-      } catch {
-        // ignore parse errors
-      }
+      } catch {}
     }
 
     ws.onerror = () => {
@@ -113,10 +138,6 @@ export const submissionApi = {
     return () => ws.close()
   },
 
-  /**
-   * 제출 목록 실시간 구독 (브로드캐스트)
-   * @returns unsubscribe 함수
-   */
   subscribeSubmissions: (
     onMessage: (type: 'NEW' | 'UPDATE', data: Submission) => void,
     onError?: () => void
@@ -127,9 +148,7 @@ export const submissionApi = {
       try {
         const { type, data } = JSON.parse(event.data) as { type: 'NEW' | 'UPDATE'; data: Submission }
         onMessage(type, data)
-      } catch {
-        // ignore
-      }
+      } catch {}
     }
 
     ws.onerror = () => {
@@ -138,5 +157,61 @@ export const submissionApi = {
     }
 
     return () => ws.close()
+  },
+
+  execute: (data: ExecutionInitData, callbacks: ExecutionCallbacks): ExecutionControls => {
+    const ws = new WebSocket(`${WS_URL}/ws/executions`)
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({
+        type: 'INIT',
+        data: {
+          problemId: data.problemId,
+          language: data.language,
+          code: data.code,
+        },
+      }))
+    }
+
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data) as ExecutionMessage
+        switch (msg.type) {
+          case 'STDOUT':
+            callbacks.onStdout?.(msg.data as string)
+            break
+          case 'STDERR':
+            callbacks.onStderr?.(msg.data as string)
+            break
+          case 'COMPLETE':
+            callbacks.onComplete?.(msg.data as ExecutionCompleteData)
+            ws.close()
+            break
+          case 'ERROR':
+            callbacks.onError?.(msg.data as string)
+            ws.close()
+            break
+        }
+      } catch {}
+    }
+
+    ws.onerror = () => {
+      callbacks.onError?.('연결 실패')
+      ws.close()
+    }
+
+    return {
+      sendStdin: (input: string) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'STDIN', data: input }))
+        }
+      },
+      kill: () => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'KILL' }))
+        }
+      },
+      close: () => ws.close(),
+    }
   },
 }
