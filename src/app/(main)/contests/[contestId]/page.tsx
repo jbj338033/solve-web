@@ -103,7 +103,6 @@ export default function ContestDetailPage({ params }: Props) {
         대회 목록
       </Link>
 
-      {/* Header */}
       <div className="mt-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
@@ -134,7 +133,6 @@ export default function ContestDetailPage({ params }: Props) {
             )}
           </div>
 
-          {/* Action Buttons */}
           <div className="flex shrink-0 items-center gap-2">
             {canLeave && (
               <button
@@ -199,7 +197,6 @@ export default function ContestDetailPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Contest Info */}
         <div className="mt-6 flex flex-wrap gap-6 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="size-4" />
@@ -219,7 +216,6 @@ export default function ContestDetailPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Countdown or Status */}
         {status === 'UPCOMING' && (
           <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3">
             <CountdownTimer targetDate={contest.startAt} />
@@ -232,7 +228,6 @@ export default function ContestDetailPage({ params }: Props) {
         )}
       </div>
 
-      {/* Problems */}
       <div className="mt-8">
         <h2 className="font-medium">문제</h2>
         <div className="mt-4">

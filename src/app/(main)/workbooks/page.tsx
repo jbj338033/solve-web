@@ -23,9 +23,7 @@ export default function WorkbooksPage() {
         setWorkbooks(res.content)
       }
       setHasNext(res.hasNext)
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [])
 
   useEffect(() => {

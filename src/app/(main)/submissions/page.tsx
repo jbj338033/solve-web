@@ -28,9 +28,7 @@ export default function SubmissionsPage() {
         setSubmissions(res.content)
       }
       setHasNext(res.hasNext)
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [])
 
   useEffect(() => {

@@ -19,7 +19,6 @@ interface Props {
   params: Promise<{ username: string }>
 }
 
-// 난이도 티어 정보
 const DIFFICULTY_TIERS = [
   { name: 'Bronze', color: '#cd7f32', range: [1, 5] },
   { name: 'Silver', color: '#c0c0c0', range: [6, 10] },
@@ -80,7 +79,6 @@ export default function ProfilePage({ params }: Props) {
       .finally(() => setIsLoading(false))
   }, [username, router, selectedPeriod])
 
-  // 난이도 분포 데이터 가공
   const difficultyData = useMemo(() => {
     if (!stats) return []
     return DIFFICULTY_TIERS.map((tier) => {
@@ -116,7 +114,6 @@ export default function ProfilePage({ params }: Props) {
 
   return (
     <div>
-      {/* Banner */}
       <div className="relative z-0 h-32 bg-muted">
         {profile.banner && (
           <Image
@@ -129,7 +126,6 @@ export default function ProfilePage({ params }: Props) {
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-6 pb-10">
-        {/* Profile Header */}
         <div className="-mt-12 flex items-end gap-4">
           {profile.profileImage ? (
             <Image
@@ -146,13 +142,11 @@ export default function ProfilePage({ params }: Props) {
           )}
         </div>
 
-        {/* Name */}
         <div className="mt-3">
           <h1 className="text-xl font-semibold">{profile.displayName}</h1>
           <p className="text-sm text-muted-foreground">@{profile.username}</p>
         </div>
 
-        {/* Bio */}
         {(profile.bio || profile.organization) && (
           <div className="mt-3">
             {profile.bio && <p className="text-sm">{profile.bio}</p>}
@@ -162,7 +156,6 @@ export default function ProfilePage({ params }: Props) {
           </div>
         )}
 
-        {/* Stats Grid */}
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <div className="rounded-lg border border-border p-4">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -210,7 +203,6 @@ export default function ProfilePage({ params }: Props) {
           </div>
         </div>
 
-        {/* Streak / Activity Graph */}
         <div className="mt-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -238,7 +230,6 @@ export default function ProfilePage({ params }: Props) {
           </div>
         </div>
 
-        {/* Difficulty Distribution */}
         {difficultyData.length > 0 && (
           <div className="mt-8">
             <p className="text-sm font-medium">난이도 분포</p>
@@ -248,7 +239,6 @@ export default function ProfilePage({ params }: Props) {
           </div>
         )}
 
-        {/* Tag Distribution */}
         {stats.tagDistribution.length > 0 && (
           <div className="mt-8">
             <p className="text-sm font-medium">태그 분포</p>

@@ -53,7 +53,6 @@ export default function ContestScoreboardPage({ params }: Props) {
     }
   }, [isHydrated, loadData])
 
-  // Auto refresh every 30 seconds during ongoing contest
   useEffect(() => {
     if (!contest) return
     const status = getContestStatus(contest.startAt, contest.endAt)
@@ -83,7 +82,6 @@ export default function ContestScoreboardPage({ params }: Props) {
         대회로 돌아가기
       </Link>
 
-      {/* Header */}
       <div className="mt-6 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold">{contest.title} - 스코어보드</h1>
@@ -117,7 +115,6 @@ export default function ContestScoreboardPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Scoreboard Table */}
       <div className="mt-6 overflow-x-auto">
         {scoreboard.participants.length > 0 ? (
           <div className="min-w-fit overflow-hidden rounded-lg border border-border">
@@ -176,7 +173,6 @@ export default function ContestScoreboardPage({ params }: Props) {
         )}
       </div>
 
-      {/* Legend */}
       <div className="mt-6 flex flex-wrap gap-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <div className="size-4 rounded bg-green-500/20" />
@@ -327,7 +323,6 @@ function ProblemScoreCell({
     )
   }
 
-  // ICPC style
   if (isSolved) {
     return (
       <div className="flex h-8 flex-col items-center justify-center rounded bg-green-500/20 text-xs text-green-700">
@@ -358,7 +353,6 @@ function formatTime(date: Date): string {
 }
 
 function formatSolveTime(solvedAt: string): string {
-  // Assuming solvedAt is minutes from contest start
   const minutes = parseInt(solvedAt, 10)
   if (isNaN(minutes)) return solvedAt
   const h = Math.floor(minutes / 60)

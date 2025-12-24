@@ -31,7 +31,6 @@ export default function SubmissionDetailPage({ params }: Props) {
       .finally(() => setIsLoading(false))
   }, [submissionId, router])
 
-  // WebSocket 실시간 업데이트
   useEffect(() => {
     if (!submission || submission.status === 'COMPLETED') return
 

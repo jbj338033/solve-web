@@ -77,9 +77,7 @@ export function ProblemsContent() {
         setProblems(res.content)
       }
       setHasNext(res.hasNext)
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [query, selectedDifficulties, selectedTags, sort])
 
   useEffect(() => {

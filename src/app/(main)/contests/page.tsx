@@ -23,9 +23,7 @@ export default function ContestsPage() {
         setContests(res.content)
       }
       setHasNext(res.hasNext)
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [])
 
   useEffect(() => {
