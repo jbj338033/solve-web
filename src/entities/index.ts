@@ -92,3 +92,6 @@ export type {
   UpdateCommentRequest,
   ReviewDecisionRequest,
 } from './review'
+
+export { feedbackApi, FEEDBACK_STATUS_LABELS, FEEDBACK_STATUS_STYLES } from './feedback'
+export type { Feedback, FeedbackStatus } from './feedback'

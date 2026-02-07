@@ -12,6 +12,7 @@ import {
   type SubmissionDetail,
   type Submission,
 } from '@/entities/submission'
+import { FeedbackPanel } from '@/features/feedback'
 import { cn } from '@/shared/lib'
 
 interface Props {
@@ -120,6 +121,13 @@ export default function SubmissionDetailPage({ params }: Props) {
         <pre className="overflow-x-auto p-6 text-sm">
           <code>{submission.code}</code>
         </pre>
+      </div>
+
+      <div className="mt-6">
+        <FeedbackPanel
+          submissionId={submission.id}
+          isCompleted={submission.status === 'COMPLETED'}
+        />
       </div>
     </div>
   )
