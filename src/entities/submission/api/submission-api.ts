@@ -76,6 +76,7 @@ export interface ExecutionCallbacks {
   onStderr?: (data: string) => void
   onComplete?: (data: ExecutionCompleteData) => void
   onError?: (message: string) => void
+  onDisconnect?: () => void
 }
 
 export interface ExecutionControls {
@@ -127,7 +128,9 @@ export const submissionApi = {
             ws.close()
             break
         }
-      } catch {}
+      } catch (e) {
+        console.error('Judge WebSocket message parse error:', e)
+      }
     }
 
     ws.onerror = () => {
@@ -148,7 +151,9 @@ export const submissionApi = {
       try {
         const { type, data } = JSON.parse(event.data) as { type: 'NEW' | 'UPDATE'; data: Submission }
         onMessage(type, data)
-      } catch {}
+      } catch (e) {
+        console.error('Submissions WebSocket message parse error:', e)
+      }
     }
 
     ws.onerror = () => {
@@ -161,11 +166,14 @@ export const submissionApi = {
 
   execute: (data: ExecutionInitData, callbacks: ExecutionCallbacks): ExecutionControls => {
     const ws = new WebSocket(`${WS_URL}/ws/executions`)
+    const { accessToken } = useAuthStore.getState()
+    let completed = false
 
     ws.onopen = () => {
       ws.send(JSON.stringify({
         type: 'INIT',
         data: {
+          token: accessToken,
           problemId: data.problemId,
           language: data.language,
           code: data.code,
@@ -184,20 +192,33 @@ export const submissionApi = {
             callbacks.onStderr?.(msg.data as string)
             break
           case 'COMPLETE':
+            completed = true
             callbacks.onComplete?.(msg.data as ExecutionCompleteData)
             ws.close()
             break
           case 'ERROR':
+            completed = true
             callbacks.onError?.(msg.data as string)
             ws.close()
             break
         }
-      } catch {}
+      } catch (e) {
+        console.error('Execution WebSocket message parse error:', e)
+      }
     }
 
     ws.onerror = () => {
-      callbacks.onError?.('연결 실패')
-      ws.close()
+      if (!completed) {
+        completed = true
+        callbacks.onError?.('연결 실패')
+      }
+    }
+
+    ws.onclose = () => {
+      if (!completed) {
+        completed = true
+        callbacks.onDisconnect?.()
+      }
     }
 
     return {
