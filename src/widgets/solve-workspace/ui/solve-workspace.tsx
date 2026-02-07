@@ -6,13 +6,12 @@ import toast from 'react-hot-toast'
 import Editor from '@monaco-editor/react'
 import { ArrowLeft, Play, Send, Loader2, Square, X, CheckCircle, XCircle } from 'lucide-react'
 import type { ProblemDetail } from '@/entities/problem'
-import { submissionApi, LANGUAGE_MAP, RESULT_LABELS, type JudgeResult } from '@/entities/submission'
+import { submissionApi, LANGUAGE_MAP, RESULT_LABELS, type JudgeResult, type ExecutionControls } from '@/entities/submission'
 import { useEditorStore } from '@/entities/editor'
 import { ProblemViewer } from '@/widgets/problem-viewer'
 import { useResizer } from '@/shared/hooks'
 import { Resizer } from '@/shared/ui'
 import { cn } from '@/shared/lib'
-import { WS_URL } from '@/shared/config'
 
 const LANGUAGES = [
   { value: 'cpp', label: 'C++', cmd: './main' },
@@ -24,6 +23,8 @@ const LANGUAGES = [
   { value: 'go', label: 'Go', cmd: './main' },
   { value: 'rust', label: 'Rust', cmd: './main' },
 ] as const
+
+const MAX_CODE_LENGTH = 65536
 
 interface ExecutionResult {
   exitCode: number | null
@@ -56,10 +57,9 @@ export function SolveWorkspace({ problem, contestId }: Props) {
   const [lines, setLines] = useState<Array<{ type: 'cmd' | 'stdout' | 'stderr' | 'stdin'; text: string }>>([])
   const [result, setResult] = useState<ExecutionResult | null>(null)
 
-  const wsRef = useRef<WebSocket | null>(null)
+  const controlsRef = useRef<ExecutionControls | null>(null)
   const outputRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const completedRef = useRef(false)
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const [submit, setSubmit] = useState<SubmitState>({
@@ -84,7 +84,7 @@ export function SolveWorkspace({ problem, contestId }: Props) {
 
   useEffect(() => {
     return () => {
-      wsRef.current?.close()
+      controlsRef.current?.close()
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
     }
   }, [])
@@ -94,82 +94,53 @@ export function SolveWorkspace({ problem, contestId }: Props) {
       toast.error('코드를 입력해주세요')
       return
     }
+    if (code.length > MAX_CODE_LENGTH) {
+      toast.error('코드가 너무 깁니다 (최대 64KB)')
+      return
+    }
 
-    wsRef.current?.close()
+    controlsRef.current?.close()
 
     const langConfig = LANGUAGES.find((l) => l.value === language)!
     setShowTerminal(true)
     setIsRunning(true)
     setLines([{ type: 'cmd', text: `$ ${langConfig.cmd}` }])
     setResult(null)
-    completedRef.current = false
 
-    const ws = new WebSocket(`${WS_URL}/ws/executions`)
-    wsRef.current = ws
-
-    ws.onopen = () => {
-      ws.send(JSON.stringify({
-        type: 'INIT',
-        data: {
-          problemId: problem.id,
-          language: LANGUAGE_MAP[language],
-          code,
+    const controls = submissionApi.execute(
+      {
+        problemId: problem.id,
+        language: LANGUAGE_MAP[language],
+        code,
+      },
+      {
+        onStdout: (data) => setLines((prev) => [...prev, { type: 'stdout', text: data }]),
+        onStderr: (data) => setLines((prev) => [...prev, { type: 'stderr', text: data }]),
+        onComplete: (data) => {
+          setResult(data as ExecutionResult)
+          setIsRunning(false)
         },
-      }))
-    }
-
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data) as { type: string; data: unknown }
-        switch (msg.type) {
-          case 'STDOUT':
-            setLines((prev) => [...prev, { type: 'stdout', text: msg.data as string }])
-            break
-          case 'STDERR':
-            setLines((prev) => [...prev, { type: 'stderr', text: msg.data as string }])
-            break
-          case 'COMPLETE':
-            completedRef.current = true
-            setResult(msg.data as ExecutionResult)
-            setIsRunning(false)
-            ws.close()
-            break
-          case 'ERROR':
-            setLines((prev) => [...prev, { type: 'stderr', text: msg.data as string }])
-            setIsRunning(false)
-            ws.close()
-            break
-        }
-      } catch {}
-    }
-
-    ws.onerror = () => {
-      setLines((prev) => [...prev, { type: 'stderr', text: '연결 실패' }])
-      setIsRunning(false)
-    }
-
-    ws.onclose = (e) => {
-      if (!completedRef.current) {
-        setLines((prev) => [...prev, { type: 'stderr', text: `연결 종료 (code: ${e.code})` }])
+        onError: (message) => {
+          setLines((prev) => [...prev, { type: 'stderr', text: message }])
+          setIsRunning(false)
+        },
+        onDisconnect: () => {
+          setIsRunning(false)
+          controlsRef.current = null
+        },
       }
-      setIsRunning(false)
-      wsRef.current = null
-    }
+    )
+    controlsRef.current = controls
   }, [code, language, problem.id])
 
   const handleKill = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'KILL' }))
-    }
+    controlsRef.current?.kill()
   }, [])
 
   const handleSendInput = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN && stdinInput) {
+    if (stdinInput) {
       setLines((prev) => [...prev, { type: 'stdin', text: stdinInput }])
-      wsRef.current.send(JSON.stringify({
-        type: 'STDIN',
-        data: stdinInput + '\n',
-      }))
+      controlsRef.current?.sendStdin(stdinInput + '\n')
       setStdinInput('')
     }
   }, [stdinInput])
@@ -177,6 +148,10 @@ export function SolveWorkspace({ problem, contestId }: Props) {
   const handleSubmit = () => {
     if (!code.trim()) {
       toast.error('코드를 입력해주세요')
+      return
+    }
+    if (code.length > MAX_CODE_LENGTH) {
+      toast.error('코드가 너무 깁니다 (최대 64KB)')
       return
     }
 
